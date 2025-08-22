@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Fullscreen Eggtown</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden; /* Hide scrollbars if they appear */
+  }
+
+  iframe {
+    display: block;
+    width: 100vw; /* Take up 100% of viewport width */
+    height: 100vh; /* Take up 100% of viewport height */
+    border: none; /* Remove iframe border */
+    margin: 0;
+    padding: 0;
+    position: absolute; /* Position the iframe to cover the entire page */
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+  }
+</style>
+</head>
+<body>
+
+<iframe src="https://eggtown.org/" allowfullscreen></iframe>
+
+</body>
+</html>
