@@ -2,104 +2,573 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Complex Battle Game</title>
+    <title>Ultimate 1v1 Grid Battle</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
-        body { margin: 0; display: flex; flex-direction: column; align-items: center; }
-        canvas { border: 1px solid black; }
-        #menu { margin-bottom: 20px; }
-        #stats { position: absolute; top: 10px; left: 10px; }
+        body {
+            background: #222;
+            color: #f6f6f6;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        h1, h2 {
+            text-align: center;
+            margin: 0.8em 0;
+        }
+        #menu, #game, #endScreen {
+            max-width: 500px;
+            margin: 2em auto;
+            background: #333;
+            border-radius: 16px;
+            box-shadow: 0 5px 20px #0007;
+            padding: 2em;
+        }
+        #menu button, #endScreen button {
+            display: block;
+            width: 100%;
+            margin: 1em 0;
+            padding: 0.8em;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 8px;
+            background: #4caf50;
+            color: white;
+            cursor: pointer;
+        }
+        #menu button:hover, #endScreen button:hover {
+            background: #388e3c;
+        }
+        #settings {
+            margin-bottom: 1.5em;
+        }
+        #game {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+        }
+        #players {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 1em;
+        }
+        .playerCard {
+            flex: 1;
+            background: #444;
+            border-radius: 8px;
+            margin: 0 0.5em;
+            padding: 1em;
+            text-align: center;
+            box-shadow: 0 2px 8px #0004;
+        }
+        .active {
+            border: 2px solid #4caf50;
+        }
+        #grid {
+            display: grid;
+            grid-template-columns: repeat(8, 48px);
+            grid-template-rows: repeat(8, 48px);
+            gap: 3px;
+            margin: 1em 0;
+            background: #222;
+            border-radius: 8px;
+            border: 2px solid #4caf50;
+        }
+        .cell {
+            width: 48px;
+            height: 48px;
+            background: #555;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .cell.p1 { background: #2196f3; color: #fff; }
+        .cell.p2 { background: #e91e63; color: #fff; }
+        .cell.blocked { background: #222; color: #aaa; cursor: not-allowed; }
+        .cell.highlight { background: #ffeb3b; color: #222; border: 2px solid #fff; }
+
+        #actions {
+            display: flex;
+            justify-content: center;
+            margin: 1em 0;
+        }
+        #actions button {
+            margin: 0 0.5em;
+            padding: 0.7em 1.2em;
+            font-size: 1em;
+            border-radius: 7px;
+            background: #607d8b;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        #actions button:disabled {
+            background: #555;
+            cursor: not-allowed;
+        }
+        #log {
+            background: #232323;
+            color: #d2ffd2;
+            padding: 0.8em;
+            border-radius: 6px;
+            height: 90px;
+            overflow-y: auto;
+            font-size: 0.95em;
+            margin-top: 1em;
+            font-family: 'Consolas', monospace;
+        }
+        #endScreen {
+            display: none;
+            text-align: center;
+        }
+        #endScreen h2 { color: #ffd700; }
+        @media (max-width: 600px) {
+            #grid { grid-template-columns: repeat(8, 32px); grid-template-rows: repeat(8, 32px);}
+            .cell { width: 32px; height: 32px; font-size: 1.3em; }
+        }
     </style>
 </head>
 <body>
+    <h1>Ultimate 1v1 Grid Battle</h1>
+    <div id="menu">
+        <div id="settings">
+            <label>
+                Player 1 Name:
+                <input type="text" id="p1name" value="Player 1" maxlength="12">
+            </label>
+            <br><br>
+            <label>
+                Player 2 Name:
+                <input type="text" id="p2name" value="Player 2" maxlength="12">
+            </label>
+            <br><br>
+            <label>
+                <input type="checkbox" id="vsAI" checked>
+                Play vs Computer
+            </label>
+            <br><br>
+            <label>
+                <input type="checkbox" id="hardAI">
+                Hard AI
+            </label>
+        </div>
+        <button id="startBtn">Start Game</button>
+        <button onclick="showRules()">How to Play</button>
+        <div id="rules" style="display:none; background:#232323; color:#fff; border-radius:8px; padding:1em; margin-top:1em;">
+            <h2>Rules</h2>
+            <ul>
+                <li>Players take turns moving on an 8x8 grid.</li>
+                <li>On your turn, you can move to an adjacent cell (orthogonally/diagonally), or block a cell to restrict movement.</li>
+                <li>Blocked cells cannot be moved onto or through.</li>
+                <li>If a player cannot make any moves, they lose!</li>
+                <li>Use strategy: trap your opponent or block their path!</li>
+                <li>Play vs another human, or challenge the AI (Easy/Hard).</li>
+            </ul>
+        </div>
+    </div>
+    <div id="game">
+        <div id="players">
+            <div class="playerCard" id="player1Card">
+                <h2 id="p1Display">Player 1</h2>
+                <div>Moves: <span id="p1Moves">0</span></div>
+                <div>Blocks Used: <span id="p1Blocks">0</span></div>
+            </div>
+            <div class="playerCard" id="player2Card">
+                <h2 id="p2Display">Player 2</h2>
+                <div>Moves: <span id="p2Moves">0</span></div>
+                <div>Blocks Used: <span id="p2Blocks">0</span></div>
+            </div>
+        </div>
+        <div id="grid"></div>
+        <div id="actions">
+            <button id="moveBtn" disabled>Move</button>
+            <button id="blockBtn" disabled>Block</button>
+            <button id="endTurnBtn" disabled>End Turn</button>
+        </div>
+        <div id="log"></div>
+    </div>
+    <div id="endScreen">
+        <h2 id="winnerText"></h2>
+        <div id="endStats"></div>
+        <button onclick="restartGame()">Play Again</button>
+        <button onclick="backToMenu()">Main Menu</button>
+    </div>
+    <script>
+        // Game constants
+        const GRID_SIZE = 8;
+        const MAX_BLOCKS = 12;
+        const logLines = [];
+        let gameState = null;
+        let selectedCell = null;
+        let actionType = null;
 
-<div id="menu">
-    <button onclick="startGame(1)">Player vs Player</button>
-    <button onclick="startGame(2)">Player vs Computer</button>
-</div>
+        // DOM elements
+        const menu = document.getElementById('menu');
+        const game = document.getElementById('game');
+        const grid = document.getElementById('grid');
+        const moveBtn = document.getElementById('moveBtn');
+        const blockBtn = document.getElementById('blockBtn');
+        const endTurnBtn = document.getElementById('endTurnBtn');
+        const logDiv = document.getElementById('log');
+        const p1nameInput = document.getElementById('p1name');
+        const p2nameInput = document.getElementById('p2name');
+        const vsAIInput = document.getElementById('vsAI');
+        const hardAIInput = document.getElementById('hardAI');
+        const player1Card = document.getElementById('player1Card');
+        const player2Card = document.getElementById('player2Card');
+        const p1Display = document.getElementById('p1Display');
+        const p2Display = document.getElementById('p2Display');
+        const p1Moves = document.getElementById('p1Moves');
+        const p2Moves = document.getElementById('p2Moves');
+        const p1Blocks = document.getElementById('p1Blocks');
+        const p2Blocks = document.getElementById('p2Blocks');
+        const endScreen = document.getElementById('endScreen');
+        const winnerText = document.getElementById('winnerText');
+        const endStats = document.getElementById('endStats');
+        const startBtn = document.getElementById('startBtn');
 
-<canvas id="gameCanvas" width="800" height="600"></canvas>
-<div id="stats"></div>
-
-<script>
-    const canvas = document.getElementById("gameCanvas");
-    const ctx = canvas.getContext("2d");
-    let player1, player2;
-    let isGameRunning = false, isPlayer1Turn = true;
-
-    function Player(name, x, y, color) {
-        this.name = name;
-        this.x = x;
-        this.y = y;
-        this.health = 100;
-        this.color = color;
-        this.width = 50;
-        this.height = 50;
-    }
-
-    function drawPlayer(player) {
-        ctx.fillStyle = player.color;
-        ctx.fillRect(player.x, player.y, player.width, player.height);
-    }
-
-    function updateStats() {
-        document.getElementById("stats").innerText = `${player1.name}: ${player1.health} HP | ${player2.name}: ${player2.health} HP`;
-    }
-
-    function gameLoop() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        drawPlayer(player1);
-        drawPlayer(player2);
-        updateStats();
-
-        if (player1.health <= 0 || player2.health <= 0) {
-            isGameRunning = false;
-            alert(player1.health <= 0 ? `${player2.name} wins!` : `${player1.name} wins!`);
-            return;
+        // Show/hide rules
+        function showRules() {
+            const rules = document.getElementById('rules');
+            rules.style.display = rules.style.display === 'none' ? 'block' : 'none';
         }
 
-        requestAnimationFrame(gameLoop);
-    }
+        // Start game
+        startBtn.onclick = () => {
+            startGame();
+        };
 
-    function startGame(mode) {
-        isGameRunning = true;
-        player1 = new Player("Player 1", 100, 100, "blue");
-        player2 = mode === 1 ? new Player("Player 2", 600, 100, "red") : new Player("Computer", 600, 100, "red");
+        function startGame() {
+            // Collect settings
+            const p1name = p1nameInput.value.trim() || "Player 1";
+            const p2name = p2nameInput.value.trim() || (vsAIInput.checked ? "Computer" : "Player 2");
+            const vsAI = vsAIInput.checked;
+            const hardAI = hardAIInput.checked;
+            // Init game
+            gameState = {
+                players: [
+                    { name: p1name, symbol: 'p1', moves: 0, blocks: 0, pos: [0, 0], isAI: false },
+                    { name: p2name, symbol: 'p2', moves: 0, blocks: 0, pos: [GRID_SIZE-1, GRID_SIZE-1], isAI: vsAI, aiLevel: hardAI ? 'hard':'easy' }
+                ],
+                current: 0,
+                grid: Array(GRID_SIZE).fill().map(()=>Array(GRID_SIZE).fill(null)),
+                winners: null,
+                turn: 1,
+                history: []
+            };
+            gameState.grid[0][0] = 'p1';
+            gameState.grid[GRID_SIZE-1][GRID_SIZE-1] = 'p2';
+            selectedCell = null;
+            actionType = null;
+            logLines.length = 0;
+            menu.style.display = 'none';
+            game.style.display = 'flex';
+            endScreen.style.display = 'none';
+            renderGame();
+            logMsg(`Game started! ${p1name} vs ${p2name}`);
+            if (gameState.players[gameState.current].isAI) {
+                setTimeout(()=>aiMove(),800);
+            }
+        }
 
-        window.addEventListener("keydown", (event) => {
-            if (!isGameRunning) return;
+        function restartGame() {
+            menu.style.display = 'block';
+            game.style.display = 'none';
+            endScreen.style.display = 'none';
+            grid.innerHTML = '';
+            logDiv.innerHTML = '';
+        }
 
-            if (event.key === 'ArrowRight') player1.x += 10;
-            if (event.key === 'ArrowLeft') player1.x -= 10;
-            if (event.key === 'ArrowUp') player1.y -= 10;
-            if (event.key === 'ArrowDown') player1.y += 10;
+        function backToMenu() {
+            restartGame();
+        }
 
-            if (event.key === ' ') {
-                if(Math.abs(player1.x - player2.x) < 50 && Math.abs(player1.y - player2.y) < 50) {
-                    player2.health -= 10;
+        // Rendering
+        function renderGame() {
+            // Players
+            p1Display.textContent = gameState.players[0].name;
+            p2Display.textContent = gameState.players[1].name;
+            p1Moves.textContent = gameState.players[0].moves;
+            p2Moves.textContent = gameState.players[1].moves;
+            p1Blocks.textContent = gameState.players[0].blocks;
+            p2Blocks.textContent = gameState.players[1].blocks;
+            player1Card.classList.toggle('active', gameState.current === 0);
+            player2Card.classList.toggle('active', gameState.current === 1);
+
+            // Grid
+            grid.innerHTML = '';
+            for (let r = 0; r < GRID_SIZE; r++) {
+                for (let c = 0; c < GRID_SIZE; c++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.r = r;
+                    cell.dataset.c = c;
+                    if (gameState.grid[r][c] === 'p1') cell.classList.add('p1');
+                    if (gameState.grid[r][c] === 'p2') cell.classList.add('p2');
+                    if (gameState.grid[r][c] === 'blocked') cell.classList.add('blocked');
+                    if (selectedCell && selectedCell[0] === r && selectedCell[1] === c) cell.classList.add('highlight');
+                    cell.onclick = ()=>cellClicked(r, c);
+                    grid.appendChild(cell);
                 }
             }
+            // Actions
+            moveBtn.disabled = true;
+            blockBtn.disabled = true;
+            endTurnBtn.disabled = true;
+            highlightOptions();
+        }
 
-            if (mode === 2 && isPlayer1Turn) {
-                // Simple AI for Computer's turn
-                setTimeout(() => {
-                    if (player2.x > player1.x) player2.x -= 10;
-                    else if (player2.x < player1.x) player2.x += 10;
-
-                    if(Math.abs(player1.x - player2.x) < 50 && Math.abs(player1.y - player2.y) < 50) {
-                        player1.health -= 10;
-                    }
-                    isPlayer1Turn = true;
-                }, 1000);
-                isPlayer1Turn = false;
+        function cellClicked(r, c) {
+            if (gameState.winners) return;
+            if (gameState.players[gameState.current].isAI) return;
+            if (actionType === 'move') {
+                if (isValidMove(r, c)) {
+                    doMove(r, c);
+                }
+            } else if (actionType === 'block') {
+                if (isValidBlock(r, c)) {
+                    doBlock(r, c);
+                }
+            } else {
+                const options = getOptions();
+                if (options.moves.some(([mr,mc]) => mr === r && mc === c)) {
+                    selectedCell = [r, c];
+                    actionType = 'move';
+                    moveBtn.disabled = false;
+                    blockBtn.disabled = true;
+                } else if (options.blocks.some(([br,bc]) => br === r && bc === c)) {
+                    selectedCell = [r, c];
+                    actionType = 'block';
+                    blockBtn.disabled = false;
+                    moveBtn.disabled = true;
+                } else {
+                    selectedCell = null;
+                    actionType = null;
+                    moveBtn.disabled = true;
+                    blockBtn.disabled = true;
+                }
+                renderGame();
             }
+        }
 
-            updateStats();
-        });
+        // Highlight available moves/blocks
+        function highlightOptions() {
+            if (gameState.winners) return;
+            if (gameState.players[gameState.current].isAI) return;
+            const options = getOptions();
+            const cells = grid.children;
+            for (const [r,c] of options.moves) {
+                cells[r*GRID_SIZE+c].classList.add('highlight');
+            }
+            for (const [r,c] of options.blocks) {
+                cells[r*GRID_SIZE+c].classList.add('highlight');
+            }
+            moveBtn.disabled = !selectedCell || actionType !== 'move';
+            blockBtn.disabled = !selectedCell || actionType !== 'block';
+            endTurnBtn.disabled = false;
+        }
 
-        gameLoop();
-    }
-</script>
+        // Get options
+        function getOptions() {
+            const player = gameState.players[gameState.current];
+            const [r, c] = player.pos;
+            const moves = [];
+            const blocks = [];
+            for (let dr = -1; dr <= 1; dr++) {
+                for (let dc = -1; dc <= 1; dc++) {
+                    if (dr === 0 && dc === 0) continue;
+                    const nr = r + dr, nc = c + dc;
+                    if (nr >= 0 && nr < GRID_SIZE && nc >= 0 && nc < GRID_SIZE) {
+                        if (gameState.grid[nr][nc] === null) moves.push([nr, nc]);
+                    }
+                }
+            }
+            if (player.blocks < MAX_BLOCKS) {
+                for (let rr = 0; rr < GRID_SIZE; rr++) {
+                    for (let cc = 0; cc < GRID_SIZE; cc++) {
+                        if (gameState.grid[rr][cc] === null && !(rr === r && cc === c)) {
+                            blocks.push([rr, cc]);
+                        }
+                    }
+                }
+            }
+            return { moves, blocks };
+        }
 
+        function isValidMove(r, c) {
+            const options = getOptions().moves;
+            return options.some(([mr, mc]) => mr === r && mc === c);
+        }
+        function isValidBlock(r, c) {
+            const options = getOptions().blocks;
+            return options.some(([br, bc]) => br === r && bc === c);
+        }
+
+        // Move action
+        moveBtn.onclick = () => {
+            if (selectedCell && actionType === 'move' && isValidMove(selectedCell[0], selectedCell[1])) {
+                doMove(selectedCell[0], selectedCell[1]);
+            }
+        };
+
+        function doMove(r, c) {
+            const player = gameState.players[gameState.current];
+            const [pr, pc] = player.pos;
+            gameState.grid[pr][pc] = null;
+            gameState.grid[r][c] = player.symbol;
+            player.pos = [r, c];
+            player.moves++;
+            logMsg(`${player.name} moved to (${r+1},${c+1})`);
+            gameState.history.push({type:'move',player:gameState.current,pos:[r,c]});
+            selectedCell = null;
+            actionType = null;
+            checkEnd();
+        }
+
+        // Block action
+        blockBtn.onclick = () => {
+            if (selectedCell && actionType === 'block' && isValidBlock(selectedCell[0], selectedCell[1])) {
+                doBlock(selectedCell[0], selectedCell[1]);
+            }
+        };
+
+        function doBlock(r, c) {
+            gameState.grid[r][c] = 'blocked';
+            const player = gameState.players[gameState.current];
+            player.blocks++;
+            logMsg(`${player.name} blocked cell (${r+1},${c+1})`);
+            gameState.history.push({type:'block',player:gameState.current,pos:[r,c]});
+            selectedCell = null;
+            actionType = null;
+            checkEnd();
+        }
+
+        // End turn
+        endTurnBtn.onclick = () => {
+            nextTurn();
+        };
+
+        function nextTurn() {
+            gameState.current = 1 - gameState.current;
+            gameState.turn++;
+            selectedCell = null;
+            actionType = null;
+            renderGame();
+            logMsg(`It's ${gameState.players[gameState.current].name}'s turn`);
+            if (gameState.players[gameState.current].isAI && !gameState.winners) {
+                setTimeout(()=>aiMove(),700);
+            }
+        }
+
+        // Logging
+        function logMsg(msg) {
+            logLines.push(`[Turn ${gameState.turn}] ${msg}`);
+            if (logLines.length > 14) logLines.shift();
+            logDiv.innerHTML = logLines.map(m=>`<div>${m}</div>`).join('');
+        }
+
+        // End check
+        function checkEnd() {
+            renderGame();
+            const player = gameState.players[gameState.current];
+            const options = getOptions();
+            if (options.moves.length === 0) {
+                gameState.winners = 1 - gameState.current;
+                setTimeout(()=>endGame(), 700);
+                return;
+            }
+            // If action was move or block, can end turn
+            endTurnBtn.disabled = false;
+            if (!player.isAI) {
+                renderGame();
+            } else {
+                setTimeout(()=>nextTurn(), 600);
+            }
+        }
+
+        // End game screen
+        function endGame() {
+            game.style.display = 'none';
+            endScreen.style.display = 'block';
+            winnerText.innerHTML = `<span style="font-size:1.4em;">Winner:</span><br>${gameState.players[gameState.winners].name}`;
+            endStats.innerHTML = `
+            <div>
+                <b>Moves:</b> ${gameState.players[0].name}: ${gameState.players[0].moves}, ${gameState.players[1].name}: ${gameState.players[1].moves}<br>
+                <b>Blocks Used:</b> ${gameState.players[0].name}: ${gameState.players[0].blocks}, ${gameState.players[1].name}: ${gameState.players[1].blocks}<br>
+                <b>Total Turns:</b> ${gameState.turn}
+            </div>
+            <div style="margin-top:1em;">
+                <b>Game Log:</b><br>
+                <pre style="max-height:120px;overflow-y:auto;font-size:0.95em;">${logLines.join('\n')}</pre>
+            </div>
+            `;
+        }
+
+        // AI logic
+        function aiMove() {
+            const player = gameState.players[gameState.current];
+            // Get options
+            const options = getOptions();
+            if (options.moves.length === 0) {
+                checkEnd();
+                return;
+            }
+            let move = null, block = null;
+            // Hard AI: try to trap opponent, block their best moves.
+            if (player.aiLevel === 'hard') {
+                // Prefer moves near opponent or center
+                const opp = gameState.players[1 - gameState.current];
+                const oppPos = opp.pos;
+                move = options.moves.sort((a,b) => {
+                    const da = dist(a, oppPos), db = dist(b, oppPos);
+                    return da-db || dist(a,[3,3])-dist(b,[3,3]);
+                })[0];
+                // Block: find cell in opponent's move options
+                const oppOptions = getPlayerOptions(opp);
+                if (player.blocks < MAX_BLOCKS && oppOptions.moves.length > 0) {
+                    block = oppOptions.moves.sort((a,b)=>dist(a,player.pos)-dist(b,player.pos))[0];
+                } else if (player.blocks < MAX_BLOCKS && options.blocks.length > 0) {
+                    block = options.blocks[Math.floor(Math.random()*options.blocks.length)];
+                }
+            } else {
+                // Easy AI: random move/block
+                move = options.moves[Math.floor(Math.random()*options.moves.length)];
+                if (player.blocks < MAX_BLOCKS && Math.random()<0.5 && options.blocks.length>0) {
+                    block = options.blocks[Math.floor(Math.random()*options.blocks.length)];
+                }
+            }
+            // Sometimes block first, sometimes move first
+            if (block && Math.random()<0.5) {
+                doBlock(block[0], block[1]);
+                setTimeout(()=>doMove(move[0], move[1]), 500);
+            } else {
+                doMove(move[0], move[1]);
+                if (block) setTimeout(()=>doBlock(block[0], block[1]), 500);
+            }
+            setTimeout(()=>nextTurn(), 700);
+        }
+        function dist(a, b) {
+            return Math.abs(a[0]-b[0]) + Math.abs(a[1]-b[1]);
+        }
+        function getPlayerOptions(player) {
+            const [r, c] = player.pos;
+            const moves = [];
+            for (let dr = -1; dr <= 1; dr++) {
+                for (let dc = -1; dc <= 1; dc++) {
+                    if (dr === 0 && dc === 0) continue;
+                    const nr = r + dr, nc = c + dc;
+                    if (nr >= 0 && nr < GRID_SIZE && nc >= 0 && nc < GRID_SIZE) {
+                        if (gameState.grid[nr][nc] === null) moves.push([nr, nc]);
+                    }
+                }
+            }
+            return { moves };
+        }
+    </script>
 </body>
 </html>
