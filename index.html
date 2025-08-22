@@ -1,34 +1,169 @@
-<!DOCTYPE html>
-<html>
-<head>
-<title>art pictures</title>
-<style>
-  html, body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    width: 100%;
-    overflow: hidden; /* Hide scrollbars if they appear */
-  }
+        // Robot Movement/AI
+            if (robot) {
+                // Simple Robot AI (Pathfinding)
+                let targetX = 0;
+                let targetY = 0;
+                if (levels[currentLevel].robotPath && levels[currentLevel].robotPath.length > 0) {
+                    const path = levels[currentLevel].robotPath;
+                    const currentPos = {x: robot.x, y: robot.y};
+                    const targetIndex = findClosestPoint(currentPos, path);
 
-  iframe {
-    display: block;
-    width: 100vw; /* Take up 100% of viewport width */
-    height: 100vh; /* Take up 100% of viewport height */
-    border: none; /* Remove iframe border */
-    margin: 0;
-    padding: 0;
-    position: absolute; /* Position the iframe to cover the entire page */
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-  }
-</style>
-</head>
-<body>
+                    if (targetIndex !== -1) {
+                         targetX = path[targetIndex].x;
+                         targetY = path[targetIndex].y;
+                    }
+                } else {
+                    // If no path, move randomly
+                     targetX = player1.x; // Chase player
+                     targetY = player1.y;
+                }
+                const robotSpeed = robot.speed * dt;
+                if (robot.x < targetX) robot.x += robotSpeed;
+                if (robot.x > targetX) robot.x -= robotSpeed;
+                if (robot.y < targetY) robot.y += robotSpeed;
+                if (robot.y > targetY) robot.y -= robotSpeed;
 
-<iframe src="https://eggtown.org/" allowfullscreen></iframe>
+                robot.update(dt, walls);
+            }
 
+            // Player 2 Movement (PvP)
+            if (player2 && !player2.isAI) {
+                player2.vx = 0;
+                player2.vy = 0;
+                if (pressedKeys[player2.controls.up]) player2.vy = -player2.speed;
+                if (pressedKeys[player2.controls.down]) player2.vy = player2.speed;
+                if (pressedKeys[player2.controls.left]) player2.vx = -player2.speed;
+                if (pressedKeys[player2.controls.right]) player2.vx = player2.speed;
+                player2.update(dt, walls);
+            }
+
+            // Item Collection
+            for (let i = items.length - 1; i >= 0; i--) {
+                const item = items[i];
+                if (player1.collidesWith(item)) {
+                    player1.collectItem();
+                    items.splice(i, 1); // Remove item
+                } else if (player2 && !player2.isAI && player2.collidesWith(item)) {
+                    player2.collectItem();
+                    items.splice(i, 1);
+                } else if (robot && robot.collidesWith(item)) {
+                     robot.collectItem();
+                    items.splice(i, 1);
+                }
+            }
+
+            // Combat (Simplified)
+            if (player2 && player1.collidesWith(player2)) {
+                if (player2.takeDamage(10)) { // Player 2 defeated
+                    gameOver('Player 1 Wins!');
+                }
+            } else if (robot && player1.collidesWith(robot)) {
+                if (player1.takeDamage(20)) { // Player 1 defeated
+                    gameOver('Robot Wins!');
+                }
+            }
+
+             if (exit && player1.collidesWith(exit)) {
+                // Level Complete
+                currentLevel++;
+                if (currentLevel < levels.length) {
+                    loadLevel(currentLevel, gameMode);
+                } else {
+                    gameOver('You Win the Game!'); // Game Complete
+                }
+            }
+        }
+
+        function findClosestPoint(currentPos, path) {
+            let closestIndex = -1;
+            let closestDistance = Infinity;
+
+            for (let i = 0; i < path.length; i++) {
+                const distance = Math.sqrt(
+                    Math.pow(currentPos.x - path[i].x, 2) +
+                    Math.pow(currentPos.y - path[i].y, 2)
+                );
+
+                if (distance < closestDistance) {
+                    closestDistance = distance;
+                    closestIndex = i;
+                }
+            }
+
+            return closestIndex;
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT); // Clear canvas
+
+            // Draw walls
+            for (const wall of walls) {
+                wall.draw(ctx);
+            }
+
+            // Draw items
+            for (const item of items) {
+                item.draw(ctx);
+            }
+
+            // Draw exit
+            if (exit) {
+                exit.draw(ctx);
+            }
+
+            // Draw players
+            player1.draw(ctx);
+            if (player2) {
+                 player2.draw(ctx);
+            }
+            if (robot) {
+                 robot.draw(ctx);
+            }
+        }
+
+        function gameOver(message) {
+            gameMode = 'menu';
+            gameOverTitle.textContent = message;
+            gameOverMessage.textContent = "Press Restart to play again, or Back to Menu.";
+            gameOverScreen.style.display = 'block';
+            gameMenu.style.display = 'none';
+        }
+
+        function resetGame() {
+            gameOverScreen.style.display = 'none';
+            gameMenu.style.display = 'block';
+            currentLevel = 0;
+            gameMode = 'menu';
+            loadLevel(currentLevel, gameMode);
+        }
+
+        // --- Event Listeners ---
+        startPvPBtn.addEventListener('click', () => {
+            gameMode = 'pvp';
+            loadLevel(currentLevel, gameMode);
+            gameMenu.style.display = 'none';
+            requestAnimationFrame(gameLoop);
+        });
+
+        startPvEBtn.addEventListener('click', () => {
+            gameMode = 'pve';
+            loadLevel(currentLevel, gameMode);
+            gameMenu.style.display = 'none';
+            requestAnimationFrame(gameLoop);
+        });
+
+        restartGameBtn.addEventListener('click', resetGame);
+
+        backToMenuBtn.addEventListener('click', () => {
+            resetGame();
+        });
+
+        // --- Initialization ---
+        loadLevel(currentLevel, gameMode); // Load the first level
+        // Start the game loop only if a game mode is selected
+        if (gameMode !== 'menu') {
+            requestAnimationFrame(gameLoop);
+        }
+    </script>
 </body>
 </html>
