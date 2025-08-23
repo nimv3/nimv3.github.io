@@ -226,6 +226,63 @@
             margin-bottom: 0.5em;
             display: none;
         }
+        #accessModal {
+            display: flex;
+            position: fixed;
+            z-index: 100000;
+            left: 0; top: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.98);
+            align-items: center;
+            justify-content: center;
+        }
+        #accessModalContent {
+            background: var(--card);
+            border-radius: calc(var(--base)*0.8);
+            box-shadow: 0 8px 32px #0008;
+            padding: var(--space);
+            border: 2px solid var(--accent);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            min-width: 260px;
+            text-align: center;
+        }
+        #accessModalContent label {
+            color: var(--accent);
+            font-size: calc(var(--base)*var(--golden)/1.3);
+            font-weight: 700;
+            margin-bottom: 0.8em;
+        }
+        #accessModalContent input {
+            background: var(--input);
+            color: var(--text);
+            border: none;
+            border-radius: calc(var(--base)*0.5);
+            font-size: calc(var(--base)*var(--golden)/1.4);
+            padding: calc(var(--base)/1.5);
+            margin-bottom: 1em;
+            font-family: 'Lora', serif;
+            text-align: center;
+        }
+        #accessModalContent button {
+            background: var(--accent);
+            color: var(--bg);
+            font-family: 'Montserrat', sans-serif;
+            font-size: calc(var(--base)*var(--golden)/1.2);
+            padding: calc(var(--base)/1.1) 0;
+            border: none;
+            border-radius: calc(var(--base)*0.6);
+            font-weight: 700;
+            box-shadow: 0 2px 8px #0003;
+            cursor: pointer;
+            transition: background 0.18s;
+        }
+        #accessError {
+            color: #e53935;
+            font-weight: 700;
+            margin-bottom: 0.5em;
+            display: none;
+        }
         @media (max-width: 750px) {
             #container { max-width: 98vw; }
             #formCard, .msgCard { padding: calc(var(--base)*0.7); }
@@ -247,7 +304,16 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body>
-    <div id="container">
+    <!-- Password modal for site access -->
+    <div id="accessModal">
+        <div id="accessModalContent">
+            <label for="accessPassword">Enter site password to access:</label>
+            <input type="password" id="accessPassword" placeholder="Website Password">
+            <div id="accessError"></div>
+            <button id="accessBtn">Access</button>
+        </div>
+    </div>
+    <div id="container" style="display:none;">
         <h1>Golden Ratio Text Wall</h1>
         <div class="subtitle">Share your thoughts, stories, or messages.<br>Timeless beauty, forever visible.</div>
         <div id="formCard">
@@ -272,6 +338,40 @@
         </div>
     </div>
     <script>
+        // Access modal logic
+        const accessModal = document.getElementById('accessModal');
+        const accessModalContent = document.getElementById('accessModalContent');
+        const accessPassword = document.getElementById('accessPassword');
+        const accessBtn = document.getElementById('accessBtn');
+        const accessError = document.getElementById('accessError');
+        const mainContainer = document.getElementById('container');
+        // Prevent scrolling while modal is open
+        document.body.style.overflow = "hidden";
+
+        function unlockSite() {
+            accessModal.style.display = "none";
+            mainContainer.style.display = "";
+            document.body.style.overflow = "";
+            accessPassword.value = '';
+        }
+
+        accessBtn.onclick = function() {
+            if(accessPassword.value === "nimv3develop") {
+                unlockSite();
+            } else {
+                accessError.textContent = "Incorrect password!";
+                accessError.style.display = "block";
+                accessPassword.value = '';
+                accessPassword.focus();
+            }
+        };
+        accessPassword.addEventListener('keydown', function(e){
+            if(e.key === "Enter") accessBtn.click();
+        });
+        window.addEventListener('DOMContentLoaded', function(){
+            accessPassword.focus();
+        });
+
         // 1. Initialize Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyDCtiOEsg0iNAIxkc-wBD_Kh6oRpwqTLQw",
@@ -342,8 +442,6 @@
         // 4. Listen for new messages (FOREVER)
         db.ref('messages').on('value', snapshot => {
             const val = snapshot.val() || {};
-            // The previous code used Object.values(val), but Firebase keys are not guaranteed to be sorted by time.
-            // So we sort by time property to ensure proper order.
             messages = Object.keys(val).map(k => val[k]).sort((a,b) => a.time - b.time);
             renderWall();
         });
