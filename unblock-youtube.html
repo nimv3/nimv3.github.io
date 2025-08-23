@@ -8,22 +8,37 @@
         .btn { display:inline-block; margin:1em; padding:1em 2em; background:#ffd700; color:#181f2a; font-size:1.2em; font-weight:700; border-radius:0.5em; text-decoration:none; }
         .box { background:#242f42; margin:2em auto; max-width:480px; padding:2em; border-radius:1em; }
         input[type="text"] { width:80%; padding:0.7em; font-size:1.1em; border-radius:0.5em; border:none; margin-top:1em; }
+        iframe { width:100%; min-height:450px; border-radius:1em; border:none; margin-top:2em; box-shadow:0 2px 18px #0005; background:#181f2a; }
     </style>
+    <script>
+        function showSearch() {
+            document.getElementById('searchFrame').style.display = 'block';
+        }
+        function playVideo() {
+            var ytUrl = document.getElementById('ytLink').value.trim();
+            if (!ytUrl || !ytUrl.includes("youtube.com")) {
+                alert("Paste a valid YouTube link!");
+                return;
+            }
+            var teamUrl = "https://michael.team/yt/?url=" + encodeURIComponent(ytUrl);
+            document.getElementById('ytFrame').src = teamUrl;
+            document.getElementById('ytFrame').style.display = 'block';
+        }
+    </script>
 </head>
 <body>
     <h1>Unblock YouTube Videos</h1>
     <div class="box">
-        <p><b>Step 1:</b> Search for your video on Google:</p>
-        <a class="btn" href="https://www.google.com/search?q=site:youtube.com" target="_blank">Search YouTube on Google</a>
-        <p><b>Step 2:</b> Copy the YouTube video link you want to watch.</p>
-        <p><b>Step 3:</b> Paste the link below to watch it (unblocked):</p>
-        <form action="https://michael.team/yt/" target="_blank" method="get" style="margin-bottom:2em;">
-            <input type="text" name="url" placeholder="Paste YouTube link here" required>
-            <button class="btn" type="submit">Watch Unblocked</button>
-        </form>
-        <p style="color:#ffd700;font-size:1em;">
-            This uses <a href="https://michael.team/yt/" target="_blank" style="color:#ffd700;text-decoration:underline;">michael.team/yt</a> to play YouTube videos even if blocked.
-        </p>
+        <p><b>Step 1:</b> Find a YouTube video to watch.</p>
+        <button class="btn" onclick="showSearch()">Search for Videos</button>
+        <div id="searchFrame" style="display:none;">
+            <iframe src="https://lmfao.bassmanbenny.com/" height="450"></iframe>
+            <p style="margin-top:1em;">Type <b>youtube.com</b> in the search box, find your video, then copy its link.</p>
+        </div>
+        <p><b>Step 2:</b> Paste your YouTube link below to watch it unblocked:</p>
+        <input type="text" id="ytLink" placeholder="Paste YouTube video link here" required>
+        <button class="btn" onclick="playVideo()">Watch Video</button>
+        <iframe id="ytFrame" style="display:none;"></iframe>
     </div>
 </body>
 </html>
