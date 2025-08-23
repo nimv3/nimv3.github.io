@@ -274,15 +274,13 @@
     <script>
         // 1. Initialize Firebase
         const firebaseConfig = {
-            // --- REPLACE BeLOW WITH YOUR FIREBASE CONFIG ---
             apiKey: "AIzaSyDCtiOEsg0iNAIxkc-wBD_Kh6oRpwqTLQw",
             authDomain: "dffr-f1f5c.firebaseapp.com",
-            databaseURL: "https://dffr-f1f5c-default-rtbd.firebaseio.com",
+            databaseURL: "https://dffr-f1f5c-default-rtdb.firebaseio.com",
             projectId: "dffr-f1f5c",
             storageBucket: "dffr-f1f5c.appspot.com",
             messagingSenderId: "1087054401424",
             appId: "1:1087054401424:web:ee1e3bef36e6b20d0f2d15"
-            // --- END REPLACE ---
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
@@ -344,7 +342,9 @@
         // 4. Listen for new messages (FOREVER)
         db.ref('messages').on('value', snapshot => {
             const val = snapshot.val() || {};
-            messages = Object.values(val).sort((a,b) => a.time - b.time);
+            // The previous code used Object.values(val), but Firebase keys are not guaranteed to be sorted by time.
+            // So we sort by time property to ensure proper order.
+            messages = Object.keys(val).map(k => val[k]).sort((a,b) => a.time - b.time);
             renderWall();
         });
 
