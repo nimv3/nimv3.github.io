@@ -5,10 +5,46 @@
     <title>Unblock YouTube Videos</title>
     <style>
         body { background:#222b3c; color:#fff; font-family:sans-serif; text-align:center; }
-        .btn { display:inline-block; margin:1em; padding:1em 2em; background:#ffd700; color:#181f2a; font-size:1.2em; font-weight:700; border-radius:0.5em; text-decoration:none; }
+        .btn { display:inline-block; margin:1em; padding:1em 2em; background:#ffd700; color:#181f2a; font-size:1.2em; font-weight:700; border-radius:0.5em; text-decoration:none; cursor:pointer; }
         .box { background:#242f42; margin:2em auto; max-width:480px; padding:2em; border-radius:1em; }
         input[type="text"] { width:80%; padding:0.7em; font-size:1.1em; border-radius:0.5em; border:none; margin-top:1em; }
         iframe { width:100%; min-height:450px; border-radius:1em; border:none; margin-top:2em; box-shadow:0 2px 18px #0005; background:#181f2a; }
+        #fullscreenOverlay {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            top:0;left:0;width:100vw;height:100vh;
+            background:#181f2a;
+            justify-content:center;
+            align-items:center;
+        }
+        #fullscreenIframe {
+            width: 96vw;
+            height: 94vh;
+            border-radius: 1em;
+            border: none;
+            box-shadow: 0 2px 24px #0009;
+            background: #222b3c;
+        }
+        #closeFullscreenBtn {
+            position: absolute;
+            top: 2vw;
+            right: 3vw;
+            background: #ffd700;
+            color: #181f2a;
+            font-size: 1.2em;
+            font-weight: 700;
+            border: none;
+            border-radius: 0.7em;
+            padding: 0.7em 2em;
+            cursor: pointer;
+            z-index: 10000;
+            box-shadow: 0 2px 12px #0006;
+        }
+        #closeFullscreenBtn:hover {
+            background: #ffe066;
+            color: #000;
+        }
     </style>
     <script>
         function showSearch() {
@@ -24,13 +60,28 @@
             document.getElementById('ytFrame').src = teamUrl;
             document.getElementById('ytFrame').style.display = 'block';
         }
+        function openAdrianFullscreen() {
+            var overlay = document.getElementById('fullscreenOverlay');
+            var iframe = document.getElementById('fullscreenIframe');
+            overlay.style.display = 'flex';
+            iframe.src = "https://adrianisthebest.kato.ninja/";
+            document.body.style.overflow = "hidden";
+        }
+        function closeAdrianFullscreen() {
+            var overlay = document.getElementById('fullscreenOverlay');
+            var iframe = document.getElementById('fullscreenIframe');
+            overlay.style.display = 'none';
+            iframe.src = "";
+            document.body.style.overflow = "";
+        }
     </script>
 </head>
 <body>
     <h1>Unblock YouTube Videos</h1>
     <div class="box">
         <p><b>Step 1:</b> Search for YouTube videos below, then copy the video link.</p>
-        <button class="btn" onclick="showSearch()">Search for Videos</button>
+        <button class="btn" onclick="showSearch()">Search for Videos (in-page)</button>
+        <button class="btn" onclick="openAdrianFullscreen()">Search in Fullscreen</button>
         <div id="searchFrame" style="display:none;">
             <iframe src="https://adrianisthebest.kato.ninja/" height="450"></iframe>
             <p style="margin-top:1em;">Type <b>youtube.com</b> in the search bar, find your video, and copy its link.</p>
@@ -39,6 +90,10 @@
         <input type="text" id="ytLink" placeholder="Paste YouTube video link here" required>
         <button class="btn" onclick="playVideo()">Watch Video</button>
         <iframe id="ytFrame" style="display:none;"></iframe>
+    </div>
+    <div id="fullscreenOverlay">
+        <button id="closeFullscreenBtn" onclick="closeAdrianFullscreen()">Close</button>
+        <iframe id="fullscreenIframe" allow="clipboard-read; clipboard-write"></iframe>
     </div>
 </body>
 </html>
