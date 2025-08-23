@@ -103,6 +103,14 @@
         }
         #wall {
             min-height: calc(var(--space)*2);
+            max-height: 50vh;
+            overflow-y: auto;
+            padding-top: 0.5em;
+            padding-bottom: 1em;
+            /* Messages at top, allow scroll down if overflow */
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
         }
         .msgCard {
             background: var(--card2);
@@ -144,11 +152,13 @@
         @media (max-width: 750px) {
             #container { max-width: 98vw; }
             #formCard, .msgCard { padding: calc(var(--base)*0.7); }
+            #wall { max-height: 45vh;}
         }
         @media (max-width: 480px) {
             h1 { font-size: calc(var(--base) * var(--golden)); }
             .subtitle { font-size: calc(var(--base) * var(--golden) / 1.6); }
             #formCard, .msgCard { padding: calc(var(--base)*0.5); }
+            #wall { max-height: 40vh;}
         }
         ::selection {
             background: var(--accent);
@@ -198,7 +208,7 @@
         // Render messages
         function renderWall(){
             wallDiv.innerHTML = '';
-            messages.slice().reverse().forEach(msg => {
+            messages.slice().forEach(msg => {
                 const card = document.createElement('div');
                 card.className = 'msgCard';
                 // Header
@@ -220,6 +230,8 @@
                 card.appendChild(txt);
                 wallDiv.appendChild(card);
             });
+            // After rendering, scroll to the bottom (show the latest message)
+            wallDiv.scrollTop = wallDiv.scrollHeight;
         }
 
         // Format date
