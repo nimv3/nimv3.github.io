@@ -2,9 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Golden Ratio Timer</title>
+    <title>Golden Ratio Timer & Chat Wall</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- Google Fonts for beautiful typography -->
     <link href="https://fonts.googleapis.com/css?family=Montserrat:700,400|Lora:400,700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -28,11 +27,12 @@
             color: var(--text);
             font-family: 'Lora', serif;
         }
-        #container {
+        #container, #chatContainer {
             max-width: 700px;
             margin: 0 auto;
             padding: calc(var(--space)*0.6);
         }
+        #chatContainer { display: none; }
         h1 {
             font-family: 'Montserrat', sans-serif;
             font-size: calc(var(--base) * var(--golden) * 1.2);
@@ -142,9 +142,6 @@
         #timerActions button:hover {
             background: #ffd70033;
         }
-        /* Hide chat wall until unlocked */
-        #chatContainer { display: none; }
-        /* Chat wall styling (copied from previous) */
         #formCard {
             background: var(--card);
             border-radius: calc(var(--base)*0.8);
@@ -367,26 +364,11 @@
         #timerFullscreenExitBtn:hover {
             background: #b71c1c;
         }
-        @media (max-width: 700px) {
-            #container, #chatContainer { max-width: 98vw; }
-        }
-        @media (max-width: 480px) {
-            h1 { font-size: calc(var(--base) * var(--golden)); }
-            .subtitle { font-size: calc(var(--base) * var(--golden) / 1.6); }
-            #timerCard, .msgCard { padding: calc(var(--base)*0.5); }
-            #timerDisplay { font-size: calc(var(--base) * var(--golden) * 1.3);}
-        }
-        ::selection {
-            background: var(--accent);
-            color: var(--bg);
-        }
     </style>
-    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body>
-    <!-- Timer container (default view) -->
     <div id="container">
         <h1>Golden Ratio Timer</h1>
         <div class="subtitle">Set a timer. Format: <b>hours:minutes:seconds</b> (Examples: <i>5:30</i>, <i>30</i>, <i>1:5:30</i>)</div>
@@ -402,7 +384,6 @@
             </div>
         </div>
     </div>
-    <!-- Chat wall container (hidden until password entered) -->
     <div id="chatContainer">
         <h1 style="color:var(--accent);font-family:'Montserrat',sans-serif;text-align:center;">Golden Ratio Text Wall</h1>
         <div class="subtitle" style="text-align:center;">Share your thoughts, stories, or messages. Timeless beauty, forever visible.</div>
@@ -427,7 +408,6 @@
             <button id="cancelClearBtn">Cancel</button>
         </div>
     </div>
-    <!-- Timer fullscreen modal -->
     <div id="timerFullscreen">
         <div id="timerFullscreenContent">
             <div id="timerFullscreenDisplay">00:00:00</div>
@@ -435,7 +415,22 @@
         </div>
     </div>
     <script>
-        // Timer logic
+        // Only initialize Firebase ONCE!
+        const firebaseConfig = {
+            apiKey: "AIzaSyDCtiOEsg0iNAIxkc-wBD_Kh6oRpwqTLQw",
+            authDomain: "dffr-f1f5c.firebaseapp.com",
+            databaseURL: "https://dffr-f1f5c-default-rtdb.firebaseio.com",
+            projectId: "dffr-f1f5c",
+            storageBucket: "dffr-f1f5c.appspot.com",
+            messagingSenderId: "1087054401424",
+            appId: "1:1087054401424:web:ee1e3bef36e6b20d0f2d15"
+        };
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.database();
+
+        // TIMER LOGIC
         const timerInput = document.getElementById('timerInput');
         const startBtn = document.getElementById('startBtn');
         const fullscreenBtn = document.getElementById('fullscreenBtn');
@@ -444,10 +439,6 @@
         const timerActions = document.getElementById('timerActions');
         const pauseBtn = document.getElementById('pauseBtn');
         const resetBtn = document.getElementById('resetBtn');
-        // Fullscreen
-        const timerFullscreen = document.getElementById('timerFullscreen');
-        const timerFullscreenDisplay = document.getElementById('timerFullscreenDisplay');
-        const timerFullscreenExitBtn = document.getElementById('timerFullscreenExitBtn');
         const chatContainer = document.getElementById('chatContainer');
         const mainContainer = document.getElementById('container');
 
@@ -472,32 +463,24 @@
             timerError.style.display = "none";
         }
         function parseTimeInput(val) {
-            // Acceptable: 90, 1:30, 1:5:30, 0:2:10, etc
             val = val.trim();
             if (!val) return null;
             let parts = val.split(':').map(x=>x.trim());
             if (parts.length === 1) {
-                // Just seconds
                 if (/^\d+$/.test(parts[0])) {
                     return parseInt(parts[0],10);
-                } else {
-                    return null;
                 }
+                return null;
             } else if (parts.length === 2) {
-                // mm:ss or h:m
                 if (/^\d+$/.test(parts[0]) && /^\d+$/.test(parts[1])) {
-                    // mm:ss
                     return parseInt(parts[0],10)*60 + parseInt(parts[1],10);
-                } else {
-                    return null;
                 }
+                return null;
             } else if (parts.length === 3) {
-                // h:m:s
                 if (/^\d+$/.test(parts[0]) && /^\d+$/.test(parts[1]) && /^\d+$/.test(parts[2])) {
                     return parseInt(parts[0],10)*3600 + parseInt(parts[1],10)*60 + parseInt(parts[2],10);
-                } else {
-                    return null;
                 }
+                return null;
             } else {
                 return null;
             }
@@ -546,10 +529,9 @@
         startBtn.onclick = function() {
             hideTimerError();
             let val = timerInput.value;
-            // Secret chat unlock
             if(val === "nimv3develop"){
                 mainContainer.style.display = "none";
-                chatContainer.style.display = "";
+                chatContainer.style.display = "block";
                 return;
             }
             let secs = parseTimeInput(val);
@@ -574,6 +556,9 @@
             hideTimerError();
         };
         // Fullscreen logic
+        const timerFullscreen = document.getElementById('timerFullscreen');
+        const timerFullscreenDisplay = document.getElementById('timerFullscreenDisplay');
+        const timerFullscreenExitBtn = document.getElementById('timerFullscreenExitBtn');
         fullscreenBtn.onclick = function() {
             timerFullscreen.style.display = "flex";
             timerFullscreenDisplay.textContent = timerDisplay.textContent;
@@ -583,31 +568,15 @@
             timerFullscreen.style.display = "none";
             document.body.style.overflow = "";
         };
-        // Escape from fullscreen
         window.addEventListener("keydown", function(e){
             if (timerFullscreen.style.display === "flex" && (e.key === "Escape" || e.key === "Esc")) {
                 timerFullscreen.style.display = "none";
                 document.body.style.overflow = "";
             }
         });
-        // Initial display
         updateTimerDisplay();
 
-        // --- Firebase Chat Wall Logic ---
-        // 1. Initialize Firebase
-        const firebaseConfig = {
-            apiKey: "AIzaSyDCtiOEsg0iNAIxkc-wBD_Kh6oRpwqTLQw",
-            authDomain: "dffr-f1f5c.firebaseapp.com",
-            databaseURL: "https://dffr-f1f5c-default-rtdb.firebaseio.com",
-            projectId: "dffr-f1f5c",
-            storageBucket: "dffr-f1f5c.appspot.com",
-            messagingSenderId: "1087054401424",
-            appId: "1:1087054401424:web:ee1e3bef36e6b20d0f2d15"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-
-        // 2. DOM elements for chat
+        // CHAT LOGIC
         const wallDiv = document.getElementById('wall');
         const form = document.getElementById('sendForm');
         const nameInput = document.getElementById('nameInput');
@@ -620,7 +589,6 @@
         const clearError = document.getElementById('clearError');
         let messages = [];
 
-        // 3. Render messages
         function renderWall() {
             wallDiv.innerHTML = '';
             messages.forEach(msg => appendMessageCard(msg));
@@ -629,7 +597,6 @@
         function appendMessageCard(msg) {
             const card = document.createElement('div');
             card.className = 'msgCard';
-            // Header
             const hdr = document.createElement('div');
             hdr.className = 'msgHeader';
             const name = document.createElement('span');
@@ -641,7 +608,6 @@
             time.textContent = formatDate(msg.time);
             hdr.appendChild(time);
             card.appendChild(hdr);
-            // Text
             const txt = document.createElement('div');
             txt.className = 'msgText';
             txt.textContent = msg.text;
@@ -661,21 +627,18 @@
             return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
         }
 
-        // 4. Listen for new messages (FOREVER)
         db.ref('messages').on('value', snapshot => {
             const val = snapshot.val() || {};
             messages = Object.keys(val).map(k => val[k]).sort((a,b) => a.time - b.time);
             renderWall();
         });
 
-        // 5. Send form
         if(form){
             form.onsubmit = e => {
                 e.preventDefault();
                 let name = nameInput.value.trim();
                 let text = textInput.value.trim();
                 if(!name || !text) return;
-                // Sanitize
                 name = name.replace(/</g,"&lt;").replace(/>/g,"&gt;");
                 text = text.replace(/</g,"&lt;").replace(/>/g,"&gt;");
                 let msg = {
@@ -683,14 +646,12 @@
                     text,
                     time: Date.now()
                 };
-                // Add to Firebase, use push for unique id
                 db.ref('messages').push(msg);
                 textInput.value = '';
                 textInput.focus();
             };
         }
 
-        // 6. Clear wall logic
         if(clearBtn){
             clearBtn.onclick = function() {
                 clearModal.style.display = 'flex';
