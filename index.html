@@ -26,6 +26,7 @@
             min-height: 100vh;
             color: var(--text);
             font-family: 'Lora', serif;
+            overflow-x: hidden;
         }
         #container, #chatContainer {
             max-width: 700px;
@@ -377,6 +378,31 @@
         #timerFullscreenExitBtn:hover {
             background: #b71c1c;
         }
+        /* Apps button only for chat page */
+        #appsBtn {
+            position: fixed;
+            left: 25px;
+            bottom: 25px;
+            z-index: 11000;
+            background: #ffd700;
+            color: #181f2a;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 1.08em;
+            padding: 0.85em 1.3em;
+            border-radius: 1em;
+            box-shadow: 0 2px 12px #0003;
+            text-decoration: none;
+            transition: background 0.16s, color 0.16s;
+            display: none;
+        }
+        #appsBtn.show {
+            display: block;
+        }
+        #appsBtn:hover, #appsBtn:focus {
+            background: #ffe066;
+            color: #000;
+        }
     </style>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -397,7 +423,7 @@
             </div>
         </div>
     </div>
-    <div id="chatContainer">
+    <div id="chatContainer" style="display:none;">
         <h1 style="color:var(--accent);font-family:'Montserrat',sans-serif;text-align:center;">Golden Ratio Text Wall</h1>
         <div class="subtitle" style="text-align:center;">Share your thoughts, stories, or messages. Timeless beauty, forever visible.</div>
         <div id="formCard">
@@ -412,6 +438,8 @@
         </div>
         <button id="scrollBottomBtn" type="button">Scroll to Latest</button>
         <div id="wall"></div>
+        <!-- Apps Button - only visible on chat page -->
+        <a href="apps.html" id="appsBtn" title="Apps">Apps</a>
     </div>
     <div id="clearModal">
         <div id="clearModalContent">
@@ -454,6 +482,7 @@
         const resetBtn = document.getElementById('resetBtn');
         const chatContainer = document.getElementById('chatContainer');
         const mainContainer = document.getElementById('container');
+        const appsBtn = document.getElementById('appsBtn');
 
         let timerSeconds = 0;
         let timerInterval = null;
@@ -545,6 +574,7 @@
             if(val === "nimv3develop"){
                 mainContainer.style.display = "none";
                 chatContainer.style.display = "block";
+                appsBtn.classList.add("show");
                 return;
             }
             let secs = parseTimeInput(val);
