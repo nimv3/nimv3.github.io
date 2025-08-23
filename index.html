@@ -2,15 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Golden Ratio Text Wall (Global)</title>
+    <title>Golden Ratio Timer</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- Google Fonts for beautiful typography -->
     <link href="https://fonts.googleapis.com/css?family=Montserrat:700,400|Lora:400,700&display=swap" rel="stylesheet">
     <style>
         :root {
             --golden: 1.618;
-            --base: 18px;
-            --space: calc(var(--base) * var(--golden));
+            --base: 20px;
             --accent: #ffd700;
             --bg: #181f2a;
             --bg-gradient: linear-gradient(135deg, #181f2a 0%, #222b3c 100%);
@@ -20,6 +19,7 @@
             --muted: #b4b4b4;
             --input: #1a2232;
             --border: #ffd70055;
+            --space: calc(var(--base) * var(--golden));
         }
         body {
             margin: 0;
@@ -49,6 +49,159 @@
             margin-bottom: var(--space);
             font-family: 'Montserrat', sans-serif;
         }
+        #timerCard {
+            background: var(--card);
+            border-radius: calc(var(--base)*0.8);
+            box-shadow: 0 8px 32px #0003;
+            padding: var(--space);
+            margin-bottom: var(--space);
+            border: 1.5px solid var(--border);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #timerInput {
+            width: 70%;
+            padding: calc(var(--base)/1.5);
+            margin-bottom: calc(var(--base)/1.2);
+            border: none;
+            border-radius: calc(var(--base)*0.5);
+            background: var(--input);
+            color: var(--text);
+            font-size: calc(var(--base) * var(--golden) / 1.2);
+            font-family: 'Lora', serif;
+            box-shadow: 0 2px 8px #0002;
+            outline: none;
+            transition: background 0.14s;
+            text-align: center;
+        }
+        #timerInput:focus {
+            background: #232f4e;
+        }
+        #startBtn, #fullscreenBtn {
+            display: block;
+            width: 70%;
+            background: var(--accent);
+            color: var(--bg);
+            font-family: 'Montserrat', sans-serif;
+            font-size: calc(var(--base)*var(--golden)/1.2);
+            padding: calc(var(--base)/1.1) 0;
+            border: none;
+            border-radius: calc(var(--base)*0.6);
+            font-weight: 700;
+            box-shadow: 0 2px 8px #0003;
+            cursor: pointer;
+            transition: background 0.18s;
+            margin-top: calc(var(--base)/2);
+        }
+        #startBtn:hover, #fullscreenBtn:hover {
+            background: #ffe066;
+        }
+        #timerError {
+            color: #e53935;
+            font-weight: 700;
+            margin-top: 0.5em;
+            display: none;
+            text-align: center;
+        }
+        #timerDisplay {
+            font-family: 'Montserrat', monospace;
+            font-size: calc(var(--base) * var(--golden) * 2.2);
+            color: var(--accent);
+            letter-spacing: 0.12em;
+            margin: calc(var(--base)*1.2) 0;
+            text-align: center;
+            background: var(--card2);
+            border-radius: calc(var(--base)*0.7);
+            box-shadow: 0 2px 16px #0003;
+            padding: calc(var(--base)*1.2);
+            width: 95%;
+            user-select: none;
+        }
+        #timerActions {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1.618em;
+            margin-top: 1em;
+        }
+        #timerActions button {
+            background: var(--card2);
+            color: var(--accent);
+            font-family: 'Montserrat', sans-serif;
+            font-size: calc(var(--base)*var(--golden)/1.4);
+            padding: 0.7em 1.618em;
+            border: none;
+            border-radius: calc(var(--base)*0.5);
+            font-weight: 700;
+            box-shadow: 0 2px 8px #0002;
+            cursor: pointer;
+            transition: background 0.16s;
+        }
+        #timerActions button:hover {
+            background: #ffd70033;
+        }
+        #hiddenAccessModal {
+            display: flex;
+            position: fixed;
+            z-index: 100000;
+            left: 0; top: 0; right: 0; bottom: 0;
+            background: #000;
+            align-items: center;
+            justify-content: center;
+        }
+        #hiddenAccessModalContent {
+            background: var(--card);
+            border-radius: calc(var(--base)*0.8);
+            box-shadow: 0 8px 32px #0008;
+            padding: var(--space);
+            border: 2px solid var(--accent);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            min-width: 260px;
+            text-align: center;
+        }
+        #hiddenAccessModalContent label {
+            color: var(--accent);
+            font-size: calc(var(--base)*var(--golden)/1.3);
+            font-weight: 700;
+            margin-bottom: 0.8em;
+        }
+        #hiddenAccessModalContent input {
+            background: var(--input);
+            color: var(--text);
+            border: none;
+            border-radius: calc(var(--base)*0.5);
+            font-size: calc(var(--base)*var(--golden)/1.4);
+            padding: calc(var(--base)/1.5);
+            margin-bottom: 1em;
+            font-family: 'Lora', serif;
+            text-align: center;
+        }
+        #hiddenAccessModalContent button {
+            background: var(--accent);
+            color: var(--bg);
+            font-family: 'Montserrat', sans-serif;
+            font-size: calc(var(--base)*var(--golden)/1.2);
+            padding: calc(var(--base)/1.1) 0;
+            border: none;
+            border-radius: calc(var(--base)*0.6);
+            font-weight: 700;
+            box-shadow: 0 2px 8px #0003;
+            cursor: pointer;
+            transition: background 0.18s;
+        }
+        #hiddenAccessError {
+            color: #e53935;
+            font-weight: 700;
+            margin-bottom: 0.5em;
+            display: none;
+        }
+        /* Hide actual chat wall until unlocked */
+        #chatContainer { display: none; }
+        /* Chat wall styling (copied from previous) */
         #formCard {
             background: var(--card);
             border-radius: calc(var(--base)*0.8);
@@ -226,96 +379,54 @@
             margin-bottom: 0.5em;
             display: none;
         }
-        #accessModal {
-            display: flex;
-            position: fixed;
-            z-index: 100000;
-            left: 0; top: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.98);
-            align-items: center;
-            justify-content: center;
-        }
-        #accessModalContent {
-            background: var(--card);
-            border-radius: calc(var(--base)*0.8);
-            box-shadow: 0 8px 32px #0008;
-            padding: var(--space);
-            border: 2px solid var(--accent);
-            color: var(--text);
-            display: flex;
-            flex-direction: column;
-            min-width: 260px;
-            text-align: center;
-        }
-        #accessModalContent label {
-            color: var(--accent);
-            font-size: calc(var(--base)*var(--golden)/1.3);
-            font-weight: 700;
-            margin-bottom: 0.8em;
-        }
-        #accessModalContent input {
-            background: var(--input);
-            color: var(--text);
-            border: none;
-            border-radius: calc(var(--base)*0.5);
-            font-size: calc(var(--base)*var(--golden)/1.4);
-            padding: calc(var(--base)/1.5);
-            margin-bottom: 1em;
-            font-family: 'Lora', serif;
-            text-align: center;
-        }
-        #accessModalContent button {
-            background: var(--accent);
-            color: var(--bg);
-            font-family: 'Montserrat', sans-serif;
-            font-size: calc(var(--base)*var(--golden)/1.2);
-            padding: calc(var(--base)/1.1) 0;
-            border: none;
-            border-radius: calc(var(--base)*0.6);
-            font-weight: 700;
-            box-shadow: 0 2px 8px #0003;
-            cursor: pointer;
-            transition: background 0.18s;
-        }
-        #accessError {
-            color: #e53935;
-            font-weight: 700;
-            margin-bottom: 0.5em;
-            display: none;
-        }
-        @media (max-width: 750px) {
-            #container { max-width: 98vw; }
-            #formCard, .msgCard { padding: calc(var(--base)*0.7); }
-            #wall { max-height: 45vh;}
+        @media (max-width: 700px) {
+            #container, #chatContainer { max-width: 98vw; }
         }
         @media (max-width: 480px) {
             h1 { font-size: calc(var(--base) * var(--golden)); }
             .subtitle { font-size: calc(var(--base) * var(--golden) / 1.6); }
-            #formCard, .msgCard { padding: calc(var(--base)*0.5); }
-            #wall { max-height: 40vh;}
+            #timerCard, .msgCard { padding: calc(var(--base)*0.5); }
+            #timerDisplay { font-size: calc(var(--base) * var(--golden) * 1.3);}
         }
         ::selection {
             background: var(--accent);
             color: var(--bg);
         }
     </style>
-    <!-- Add Firebase SDKs -->
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body>
-    <!-- Password modal for site access -->
-    <div id="accessModal">
-        <div id="accessModalContent">
-            <label for="accessPassword">Enter site password to access:</label>
-            <input type="password" id="accessPassword" placeholder="Website Password">
-            <div id="accessError"></div>
-            <button id="accessBtn">Access</button>
+    <!-- Hidden access modal -->
+    <div id="hiddenAccessModal">
+        <div id="hiddenAccessModalContent">
+            <label for="hiddenAccessPassword">Enter site password to access:</label>
+            <input type="password" id="hiddenAccessPassword" placeholder="Website Password">
+            <div id="hiddenAccessError"></div>
+            <button id="hiddenAccessBtn">Access</button>
         </div>
     </div>
-    <div id="container" style="display:none;">
-        <h1>Golden Ratio Text Wall</h1>
-        <div class="subtitle">Share your thoughts, stories, or messages.<br>Timeless beauty, forever visible.</div>
+    <!-- Timer container (default view) -->
+    <div id="container">
+        <h1>Golden Ratio Timer</h1>
+        <div class="subtitle">Set a timer. Format: <b>hours:minutes:seconds</b> (Examples: <i>5:30</i>, <i>30</i>, <i>1:5:30</i>)</div>
+        <div id="timerCard">
+            <input type="text" id="timerInput" placeholder="Enter time (e.g. 1:20, 30, 0:2:00)">
+            <button id="startBtn">Start Timer</button>
+            <button id="fullscreenBtn">Fullscreen</button>
+            <div id="timerError"></div>
+            <div id="timerDisplay">00:00:00</div>
+            <div id="timerActions">
+                <button id="pauseBtn" disabled>Pause</button>
+                <button id="resetBtn" disabled>Reset</button>
+            </div>
+        </div>
+    </div>
+    <!-- Chat wall container (hidden until password entered) -->
+    <div id="chatContainer">
+        <h1 style="color:var(--accent);font-family:'Montserrat',sans-serif;text-align:center;">Golden Ratio Text Wall</h1>
+        <div class="subtitle" style="text-align:center;">Share your thoughts, stories, or messages. Timeless beauty, forever visible.</div>
         <div id="formCard">
             <form id="sendForm" autocomplete="off">
                 <label for="nameInput">Your Name</label>
@@ -337,41 +448,197 @@
             <button id="cancelClearBtn">Cancel</button>
         </div>
     </div>
+    <!-- Timer fullscreen modal -->
+    <div id="timerFullscreen">
+        <div id="timerFullscreenContent">
+            <div id="timerFullscreenDisplay">00:00:00</div>
+            <button id="timerFullscreenExitBtn">Exit Fullscreen</button>
+        </div>
+    </div>
     <script>
-        // Access modal logic
-        const accessModal = document.getElementById('accessModal');
-        const accessModalContent = document.getElementById('accessModalContent');
-        const accessPassword = document.getElementById('accessPassword');
-        const accessBtn = document.getElementById('accessBtn');
-        const accessError = document.getElementById('accessError');
+        // Password modal for site access
+        const hiddenAccessModal = document.getElementById('hiddenAccessModal');
+        const hiddenAccessPassword = document.getElementById('hiddenAccessPassword');
+        const hiddenAccessBtn = document.getElementById('hiddenAccessBtn');
+        const hiddenAccessError = document.getElementById('hiddenAccessError');
         const mainContainer = document.getElementById('container');
-        // Prevent scrolling while modal is open
+        const chatContainer = document.getElementById('chatContainer');
         document.body.style.overflow = "hidden";
-
         function unlockSite() {
-            accessModal.style.display = "none";
-            mainContainer.style.display = "";
+            hiddenAccessModal.style.display = "none";
+            mainContainer.style.display = "none";
+            chatContainer.style.display = "";
             document.body.style.overflow = "";
-            accessPassword.value = '';
+            hiddenAccessPassword.value = '';
         }
-
-        accessBtn.onclick = function() {
-            if(accessPassword.value === "nimv3develop") {
+        hiddenAccessBtn.onclick = function() {
+            if(hiddenAccessPassword.value === "nimv3develop") {
                 unlockSite();
             } else {
-                accessError.textContent = "Incorrect password!";
-                accessError.style.display = "block";
-                accessPassword.value = '';
-                accessPassword.focus();
+                hiddenAccessError.textContent = "Incorrect password!";
+                hiddenAccessError.style.display = "block";
+                hiddenAccessPassword.value = '';
+                hiddenAccessPassword.focus();
             }
         };
-        accessPassword.addEventListener('keydown', function(e){
-            if(e.key === "Enter") accessBtn.click();
+        hiddenAccessPassword.addEventListener('keydown', function(e){
+            if(e.key === "Enter") hiddenAccessBtn.click();
         });
         window.addEventListener('DOMContentLoaded', function(){
-            accessPassword.focus();
+            hiddenAccessPassword.focus();
         });
 
+        // Timer logic
+        const timerInput = document.getElementById('timerInput');
+        const startBtn = document.getElementById('startBtn');
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
+        const timerError = document.getElementById('timerError');
+        const timerDisplay = document.getElementById('timerDisplay');
+        const timerActions = document.getElementById('timerActions');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        // Fullscreen
+        const timerFullscreen = document.getElementById('timerFullscreen');
+        const timerFullscreenDisplay = document.getElementById('timerFullscreenDisplay');
+        const timerFullscreenExitBtn = document.getElementById('timerFullscreenExitBtn');
+
+        let timerSeconds = 0;
+        let timerInterval = null;
+        let isPaused = false;
+        let originalSeconds = 0;
+
+        function formatTimer(secs) {
+            secs = Math.max(0, Math.floor(secs));
+            let h = Math.floor(secs/3600);
+            let m = Math.floor((secs%3600)/60);
+            let s = secs%60;
+            return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+        }
+        function showTimerError(msg) {
+            timerError.textContent = msg;
+            timerError.style.display = "block";
+        }
+        function hideTimerError() {
+            timerError.textContent = "";
+            timerError.style.display = "none";
+        }
+        function parseTimeInput(val) {
+            // Acceptable: 90, 1:30, 1:5:30, 0:2:10, etc
+            val = val.trim();
+            if (!val) return null;
+            let parts = val.split(':').map(x=>x.trim());
+            if (parts.length === 1) {
+                // Just seconds
+                if (/^\d+$/.test(parts[0])) {
+                    return parseInt(parts[0],10);
+                } else {
+                    return null;
+                }
+            } else if (parts.length === 2) {
+                // mm:ss or h:m
+                if (/^\d+$/.test(parts[0]) && /^\d+$/.test(parts[1])) {
+                    // mm:ss
+                    return parseInt(parts[0],10)*60 + parseInt(parts[1],10);
+                } else {
+                    return null;
+                }
+            } else if (parts.length === 3) {
+                // h:m:s
+                if (/^\d+$/.test(parts[0]) && /^\d+$/.test(parts[1]) && /^\d+$/.test(parts[2])) {
+                    return parseInt(parts[0],10)*3600 + parseInt(parts[1],10)*60 + parseInt(parts[2],10);
+                } else {
+                    return null;
+                }
+            } else {
+                return null;
+            }
+        }
+        function updateTimerDisplay() {
+            timerDisplay.textContent = formatTimer(timerSeconds);
+            timerFullscreenDisplay.textContent = formatTimer(timerSeconds);
+        }
+        function startTimer() {
+            if (timerSeconds <= 0) return;
+            isPaused = false;
+            pauseBtn.textContent = "Pause";
+            pauseBtn.disabled = false;
+            resetBtn.disabled = false;
+            startBtn.disabled = true;
+            timerInput.disabled = true;
+            fullscreenBtn.disabled = false;
+            timerInterval = setInterval(()=>{
+                if (!isPaused && timerSeconds > 0) {
+                    timerSeconds--;
+                    updateTimerDisplay();
+                    if (timerSeconds <= 0) {
+                        clearInterval(timerInterval);
+                        timerInterval = null;
+                        pauseBtn.disabled = true;
+                        startBtn.disabled = false;
+                        timerInput.disabled = false;
+                        fullscreenBtn.disabled = true;
+                    }
+                }
+            }, 1000);
+        }
+        function resetTimer() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            timerSeconds = originalSeconds;
+            updateTimerDisplay();
+            pauseBtn.textContent = "Pause";
+            pauseBtn.disabled = true;
+            resetBtn.disabled = true;
+            startBtn.disabled = false;
+            timerInput.disabled = false;
+            fullscreenBtn.disabled = false;
+            isPaused = false;
+        }
+        startBtn.onclick = function() {
+            hideTimerError();
+            let val = timerInput.value;
+            let secs = parseTimeInput(val);
+            if (secs === null || secs <= 0 || secs > 86400) {
+                showTimerError("Invalid format. Use hours:minutes:seconds (max 24h). Examples: 90, 1:30, 1:5:30, 0:2:10");
+                return;
+            }
+            timerSeconds = secs;
+            originalSeconds = secs;
+            updateTimerDisplay();
+            startTimer();
+        };
+        pauseBtn.onclick = function() {
+            if (!timerInterval) return;
+            isPaused = !isPaused;
+            pauseBtn.textContent = isPaused ? "Resume" : "Pause";
+        };
+        resetBtn.onclick = function() {
+            resetTimer();
+        };
+        timerInput.oninput = function() {
+            hideTimerError();
+        };
+        // Fullscreen logic
+        fullscreenBtn.onclick = function() {
+            timerFullscreen.style.display = "flex";
+            timerFullscreenDisplay.textContent = timerDisplay.textContent;
+            document.body.style.overflow = "hidden";
+        };
+        timerFullscreenExitBtn.onclick = function() {
+            timerFullscreen.style.display = "none";
+            document.body.style.overflow = "";
+        };
+        // Escape from fullscreen
+        window.addEventListener("keydown", function(e){
+            if (timerFullscreen.style.display === "flex" && (e.key === "Escape" || e.key === "Esc")) {
+                timerFullscreen.style.display = "none";
+                document.body.style.overflow = "";
+            }
+        });
+        // Initial display
+        updateTimerDisplay();
+
+        // --- Firebase Chat Wall Logic ---
         // 1. Initialize Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyDCtiOEsg0iNAIxkc-wBD_Kh6oRpwqTLQw",
@@ -385,7 +652,7 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // 2. DOM elements
+        // 2. DOM elements for chat
         const wallDiv = document.getElementById('wall');
         const form = document.getElementById('sendForm');
         const nameInput = document.getElementById('nameInput');
@@ -447,52 +714,60 @@
         });
 
         // 5. Send form
-        form.onsubmit = e => {
-            e.preventDefault();
-            let name = nameInput.value.trim();
-            let text = textInput.value.trim();
-            if(!name || !text) return;
-            // Sanitize
-            name = name.replace(/</g,"&lt;").replace(/>/g,"&gt;");
-            text = text.replace(/</g,"&lt;").replace(/>/g,"&gt;");
-            let msg = {
-                name,
-                text,
-                time: Date.now()
+        if(form){
+            form.onsubmit = e => {
+                e.preventDefault();
+                let name = nameInput.value.trim();
+                let text = textInput.value.trim();
+                if(!name || !text) return;
+                // Sanitize
+                name = name.replace(/</g,"&lt;").replace(/>/g,"&gt;");
+                text = text.replace(/</g,"&lt;").replace(/>/g,"&gt;");
+                let msg = {
+                    name,
+                    text,
+                    time: Date.now()
+                };
+                // Add to Firebase, use push for unique id
+                db.ref('messages').push(msg);
+                textInput.value = '';
+                textInput.focus();
             };
-            // Add to Firebase, use push for unique id
-            db.ref('messages').push(msg);
-            textInput.value = '';
-            textInput.focus();
-        };
+        }
 
         // 6. Clear wall logic
-        clearBtn.onclick = function() {
-            clearModal.style.display = 'flex';
-            clearPassword.value = '';
-            clearError.textContent = '';
-            clearError.style.display = 'none';
-            clearPassword.focus();
-        };
-        cancelClearBtn.onclick = function() {
-            clearModal.style.display = 'none';
-        };
-        confirmClearBtn.onclick = function() {
-            if (clearPassword.value === 'class') {
-                db.ref('messages').set({});
-                clearModal.style.display = 'none';
-            } else {
-                clearError.textContent = 'Incorrect password!';
-                clearError.style.display = 'block';
+        if(clearBtn){
+            clearBtn.onclick = function() {
+                clearModal.style.display = 'flex';
                 clearPassword.value = '';
+                clearError.textContent = '';
+                clearError.style.display = 'none';
                 clearPassword.focus();
-            }
-        };
-        clearPassword.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') {
-                confirmClearBtn.click();
-            }
-        });
+            };
+        }
+        if(cancelClearBtn){
+            cancelClearBtn.onclick = function() {
+                clearModal.style.display = 'none';
+            };
+        }
+        if(confirmClearBtn){
+            confirmClearBtn.onclick = function() {
+                if (clearPassword.value === 'class') {
+                    db.ref('messages').set({});
+                    clearModal.style.display = 'none';
+                } else {
+                    clearError.textContent = 'Incorrect password!';
+                    clearError.style.display = 'block';
+                    clearPassword.value = '';
+                    clearPassword.focus();
+                }
+            };
+            clearPassword.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    confirmClearBtn.click();
+                }
+            });
+        }
     </script>
 </body>
 </html>
