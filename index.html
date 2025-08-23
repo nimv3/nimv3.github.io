@@ -5,17 +5,31 @@
     <title>Ultimate 1v1 Tag Arena</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
+        html, body {
+            height: 100%;
+        }
         body {
             background: #181f2a;
             color: #efefef;
             font-family: 'Segoe UI', Arial, sans-serif;
             margin: 0;
             padding: 0;
+            height: 100%;
+            overflow: hidden;
         }
         h1, h2 {
             text-align: center;
             margin: 0.8em 0;
             font-weight: 700;
+        }
+        #container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
         }
         #menu, #game, #endScreen {
             max-width: 520px;
@@ -24,8 +38,9 @@
             border-radius: 16px;
             box-shadow: 0 5px 20px #0008;
             padding: 2em;
+            z-index: 2;
         }
-        #menu button, #endScreen button {
+        #menu button, #endScreen button, #fullscreenBtn {
             display: block;
             width: 100%;
             margin: 1em 0;
@@ -38,7 +53,7 @@
             cursor: pointer;
             font-weight: bold;
         }
-        #menu button:hover, #endScreen button:hover {
+        #menu button:hover, #endScreen button:hover, #fullscreenBtn:hover {
             background: #ffa000;
         }
         #settings {
@@ -52,6 +67,7 @@
             display: none;
             flex-direction: column;
             align-items: center;
+            z-index: 2;
         }
         #players {
             display: flex;
@@ -71,15 +87,27 @@
         .active {
             border: 2px solid #ffb300;
         }
+        #arenaWrapper {
+            position: relative;
+            width: 90vw;
+            max-width: 900px;
+            height: 60vw;
+            max-height: 600px;
+            background: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 1em auto;
+        }
         #arena {
             position: relative;
-            width: 400px;
-            height: 400px;
+            width: 600px;
+            height: 600px;
             background: #202b3c;
             border: 2px solid #ffb300;
             border-radius: 16px;
-            margin: 1em 0;
             overflow: hidden;
+            transition: width 0.2s, height 0.2s;
         }
         .player {
             position: absolute;
@@ -158,17 +186,18 @@
             font-size:1em;
             margin-bottom: 0.7em;
         }
-        @media (max-width: 520px) {
-            #arena {
-                width: 98vw;
-                height: 98vw;
-                max-width: 380px;
-                max-height: 380px;
-            }
+        #fullscreenBtn {
+            width: 98%;
+            margin: 1em auto 0 auto;
+        }
+        @media (max-width: 700px) {
+            #arenaWrapper { width: 98vw; height: 98vw; max-width: 98vw; max-height: 98vw;}
+            #arena { width: 98vw; height: 98vw; max-width: 98vw; max-height: 98vw;}
         }
     </style>
 </head>
 <body>
+<div id="container">
     <h1>Ultimate 1v1 Tag Arena</h1>
     <div id="menu">
         <div id="settings">
@@ -199,6 +228,7 @@
         </div>
         <button id="startBtn">Start Game</button>
         <button onclick="showRules()">How to Play</button>
+        <button id="fullscreenBtn">Fullscreen Mode</button>
         <div id="rules">
             <h2>Tag Arena - Rules</h2>
             <ul>
@@ -228,7 +258,9 @@
                 <div>Times Tagged: <span id="p2Tagged">0</span></div>
             </div>
         </div>
-        <div id="arena"></div>
+        <div id="arenaWrapper">
+            <div id="arena"></div>
+        </div>
         <div id="actions">
             <button id="pauseBtn">Pause</button>
         </div>
@@ -240,17 +272,19 @@
         <button onclick="restartGame()">Play Again</button>
         <button onclick="backToMenu()">Main Menu</button>
     </div>
-    <script>
+</div>
+<script>
     // Constants
-    const ARENA_SIZE = 400;
+    let ARENA_SIZE = 600;
     const PLAYER_SIZE = 36;
     const PLAYER_SPEED = 4.6;
-    const STUN_TIME = 1100; // ms
+    const STUN_TIME = 1100;
     const TAG_RADIUS = 38;
     const OBSTACLE_MIN_SIZE = 42;
     const OBSTACLE_MAX_SIZE = 88;
     const SCORE_PER_SEC = 1;
     const LOG_LIMIT = 16;
+    const OBSTACLE_MARGIN = 62; // used to ensure a path exists
 
     // State
     let gameState = null;
@@ -262,6 +296,7 @@
     const menu = document.getElementById('menu');
     const game = document.getElementById('game');
     const arena = document.getElementById('arena');
+    const arenaWrapper = document.getElementById('arenaWrapper');
     const timerDiv = document.getElementById('timer');
     const keyHint = document.getElementById('keyHint');
     const p1nameInput = document.getElementById('p1name');
@@ -284,6 +319,7 @@
     const endStats = document.getElementById('endStats');
     const startBtn = document.getElementById('startBtn');
     const pauseBtn = document.getElementById('pauseBtn');
+    const fullscreenBtn = document.getElementById('fullscreenBtn');
 
     // Show/hide rules
     function showRules() {
@@ -291,12 +327,59 @@
         rules.style.display = rules.style.display === 'none' ? 'block' : 'none';
     }
 
+    // Fullscreen button logic
+    fullscreenBtn.onclick = () => {
+        fullScreenArena();
+    };
+
+    function fullScreenArena() {
+        const container = document.getElementById('container');
+        if (container.requestFullscreen) {
+            container.requestFullscreen();
+        } else if (container.webkitRequestFullscreen) {
+            container.webkitRequestFullscreen();
+        } else if (container.mozRequestFullScreen) {
+            container.mozRequestFullScreen();
+        } else if (container.msRequestFullscreen) {
+            container.msRequestFullscreen();
+        }
+        // Resize ARENA_SIZE to fit window
+        setTimeout(() => {
+            const w = window.innerWidth, h = window.innerHeight;
+            const size = Math.min(w, h, 900, 600);
+            ARENA_SIZE = size;
+            arena.style.width = size + 'px';
+            arena.style.height = size + 'px';
+            arenaWrapper.style.width = size + 'px';
+            arenaWrapper.style.height = size + 'px';
+            if (gameState) renderGame();
+        }, 200);
+    }
+
+    // Exit fullscreen restore arena size
+    document.addEventListener('fullscreenchange', () => {
+        if (!document.fullscreenElement) {
+            ARENA_SIZE = 600;
+            arena.style.width = ARENA_SIZE + 'px';
+            arena.style.height = ARENA_SIZE + 'px';
+            arenaWrapper.style.width = ARENA_SIZE + 'px';
+            arenaWrapper.style.height = ARENA_SIZE + 'px';
+            if (gameState) renderGame();
+        }
+    });
+
     // Start game
     startBtn.onclick = () => {
         startGame();
     };
 
     function startGame() {
+        ARENA_SIZE = 600;
+        arena.style.width = ARENA_SIZE + 'px';
+        arena.style.height = ARENA_SIZE + 'px';
+        arenaWrapper.style.width = ARENA_SIZE + 'px';
+        arenaWrapper.style.height = ARENA_SIZE + 'px';
+
         // Get settings
         const p1name = p1nameInput.value.trim() || "Player 1";
         const p2name = p2nameInput.value.trim() || (vsAIInput.checked ? "Computer" : "Player 2");
@@ -309,25 +392,31 @@
         let p1pos = { x: 32, y: 32 };
         let p2pos = { x: ARENA_SIZE-PLAYER_SIZE-32, y: ARENA_SIZE-PLAYER_SIZE-32 };
 
-        // Obstacles
+        // Obstacles - new algorithm: ensure a central path always exists!
         let obstacles = [];
-        for (let i = 0; i < obstacleCount; ++i) {
-            let tries = 0, valid = false, ox, oy, ow, oh;
-            while (!valid && tries < 40) {
-                ow = Math.floor(Math.random()*(OBSTACLE_MAX_SIZE-OBSTACLE_MIN_SIZE))+OBSTACLE_MIN_SIZE;
-                oh = Math.floor(Math.random()*(OBSTACLE_MAX_SIZE-OBSTACLE_MIN_SIZE))+OBSTACLE_MIN_SIZE;
-                ox = Math.random()*(ARENA_SIZE-ow-8)+4;
-                oy = Math.random()*(ARENA_SIZE-oh-8)+4;
-                // Don't block spawn
-                let distToP1 = Math.hypot(p1pos.x-ox, p1pos.y-oy);
-                let distToP2 = Math.hypot(p2pos.x-ox, p2pos.y-oy);
-                valid = distToP1 > 70 && distToP2 > 70;
-                // Don't overlap other obstacles
-                for (const o of obstacles) {
-                    if (ox+ow > o.x && ox < o.x+o.w && oy+oh > o.y && oy < o.y+o.h) valid = false;
-                }
-                tries++;
+        let attempts = 0;
+        while (obstacles.length < obstacleCount && attempts < 120) {
+            attempts++;
+            let ow = Math.floor(Math.random()*(OBSTACLE_MAX_SIZE-OBSTACLE_MIN_SIZE))+OBSTACLE_MIN_SIZE;
+            let oh = Math.floor(Math.random()*(OBSTACLE_MAX_SIZE-OBSTACLE_MIN_SIZE))+OBSTACLE_MIN_SIZE;
+            let ox = Math.random()*(ARENA_SIZE-ow-8)+4;
+            let oy = Math.random()*(ARENA_SIZE-oh-8)+4;
+
+            // Don't block spawn
+            let distToP1 = Math.hypot(p1pos.x-ox, p1pos.y-oy);
+            let distToP2 = Math.hypot(p2pos.x-ox, p2pos.y-oy);
+            let valid = distToP1 > OBSTACLE_MARGIN && distToP2 > OBSTACLE_MARGIN;
+
+            // Don't overlap other obstacles
+            for (const o of obstacles) {
+                if (ox+ow > o.x && ox < o.x+o.w && oy+oh > o.y && oy < o.y+o.h) valid = false;
             }
+            // Don't block central vertical/horizontal corridor (guaranteed path)
+            let cx1 = ARENA_SIZE/2 - 70, cx2 = ARENA_SIZE/2 + 70;
+            let cy1 = ARENA_SIZE/2 - 70, cy2 = ARENA_SIZE/2 + 70;
+            if ((ox < cx2 && ox+ow > cx1) && (oy < ARENA_SIZE && oy+oh > 0)) valid = false;
+            if ((oy < cy2 && oy+oh > cy1) && (ox < ARENA_SIZE && ox+ow > 0)) valid = false;
+
             if (valid) obstacles.push({ x: ox, y: oy, w: ow, h: oh });
         }
 
@@ -372,8 +461,8 @@
         }
 
         // Keyboard
-        window.addEventListener('keydown', handleKeyDown);
-        window.addEventListener('keyup', handleKeyUp);
+        window.addEventListener('keydown', handleKeyDown, { passive: false });
+        window.addEventListener('keyup', handleKeyUp, { passive: false });
         pauseBtn.onclick = togglePause;
         pauseBtn.textContent = "Pause";
     }
@@ -508,6 +597,10 @@
     function handleKeyDown(e) {
         if (!gameState.running || gameState.paused) return;
         let code = e.code;
+        // Prevent Arrow keys from scrolling
+        if (["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(code)) {
+            e.preventDefault();
+        }
         // Player 1: Arrow keys
         if (!gameState.players[0].isAI) {
             if (["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(code)) {
@@ -654,7 +747,6 @@
             other.tagged++;
             other.stun = STUN_TIME;
             logMsg(`${it.name} tagged ${other.name}!`);
-            // Play sound
             playTagSound();
         }
     }
@@ -720,6 +812,21 @@
             </div>
             `;
     }
-    </script>
+
+    // Resize for mobile/fullscreen
+    function resizeArena() {
+        let size = Math.min(window.innerWidth, window.innerHeight, 900);
+        ARENA_SIZE = size < 400 ? 400 : size;
+        arena.style.width = ARENA_SIZE + 'px';
+        arena.style.height = ARENA_SIZE + 'px';
+        arenaWrapper.style.width = ARENA_SIZE + 'px';
+        arenaWrapper.style.height = ARENA_SIZE + 'px';
+        if (gameState) renderGame();
+    }
+    window.addEventListener('resize', () => {
+        resizeArena();
+    });
+
+</script>
 </body>
 </html>
