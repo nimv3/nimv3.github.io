@@ -142,64 +142,7 @@
         #timerActions button:hover {
             background: #ffd70033;
         }
-        #hiddenAccessModal {
-            display: flex;
-            position: fixed;
-            z-index: 100000;
-            left: 0; top: 0; right: 0; bottom: 0;
-            background: #000;
-            align-items: center;
-            justify-content: center;
-        }
-        #hiddenAccessModalContent {
-            background: var(--card);
-            border-radius: calc(var(--base)*0.8);
-            box-shadow: 0 8px 32px #0008;
-            padding: var(--space);
-            border: 2px solid var(--accent);
-            color: var(--text);
-            display: flex;
-            flex-direction: column;
-            min-width: 260px;
-            text-align: center;
-        }
-        #hiddenAccessModalContent label {
-            color: var(--accent);
-            font-size: calc(var(--base)*var(--golden)/1.3);
-            font-weight: 700;
-            margin-bottom: 0.8em;
-        }
-        #hiddenAccessModalContent input {
-            background: var(--input);
-            color: var(--text);
-            border: none;
-            border-radius: calc(var(--base)*0.5);
-            font-size: calc(var(--base)*var(--golden)/1.4);
-            padding: calc(var(--base)/1.5);
-            margin-bottom: 1em;
-            font-family: 'Lora', serif;
-            text-align: center;
-        }
-        #hiddenAccessModalContent button {
-            background: var(--accent);
-            color: var(--bg);
-            font-family: 'Montserrat', sans-serif;
-            font-size: calc(var(--base)*var(--golden)/1.2);
-            padding: calc(var(--base)/1.1) 0;
-            border: none;
-            border-radius: calc(var(--base)*0.6);
-            font-weight: 700;
-            box-shadow: 0 2px 8px #0003;
-            cursor: pointer;
-            transition: background 0.18s;
-        }
-        #hiddenAccessError {
-            color: #e53935;
-            font-weight: 700;
-            margin-bottom: 0.5em;
-            display: none;
-        }
-        /* Hide actual chat wall until unlocked */
+        /* Hide chat wall until unlocked */
         #chatContainer { display: none; }
         /* Chat wall styling (copied from previous) */
         #formCard {
@@ -379,6 +322,51 @@
             margin-bottom: 0.5em;
             display: none;
         }
+        #timerFullscreen {
+            position: fixed;
+            z-index: 99999;
+            top: 0; left: 0; right: 0; bottom: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: #181f2a;
+        }
+        #timerFullscreenContent {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #timerFullscreenDisplay {
+            font-family: 'Montserrat', monospace;
+            font-size: min(13vw, 13vh, 120px);
+            color: var(--accent);
+            background: var(--card);
+            border-radius: calc(var(--base)*2);
+            padding: 2em 2.618em;
+            box-shadow: 0 6px 32px #0006;
+            text-align: center;
+            user-select: none;
+        }
+        #timerFullscreenExitBtn {
+            position: absolute;
+            top: 2vw;
+            right: 2vw;
+            background: #e53935;
+            color: #fff;
+            font-family: 'Montserrat', sans-serif;
+            font-size: min(4vw, 24px);
+            padding: 0.8em 1.618em;
+            border: none;
+            border-radius: 1em;
+            font-weight: 700;
+            box-shadow: 0 2px 8px #0006;
+            cursor: pointer;
+        }
+        #timerFullscreenExitBtn:hover {
+            background: #b71c1c;
+        }
         @media (max-width: 700px) {
             #container, #chatContainer { max-width: 98vw; }
         }
@@ -398,15 +386,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body>
-    <!-- Hidden access modal -->
-    <div id="hiddenAccessModal">
-        <div id="hiddenAccessModalContent">
-            <label for="hiddenAccessPassword">Enter site password to access:</label>
-            <input type="password" id="hiddenAccessPassword" placeholder="Website Password">
-            <div id="hiddenAccessError"></div>
-            <button id="hiddenAccessBtn">Access</button>
-        </div>
-    </div>
     <!-- Timer container (default view) -->
     <div id="container">
         <h1>Golden Ratio Timer</h1>
@@ -456,38 +435,6 @@
         </div>
     </div>
     <script>
-        // Password modal for site access
-        const hiddenAccessModal = document.getElementById('hiddenAccessModal');
-        const hiddenAccessPassword = document.getElementById('hiddenAccessPassword');
-        const hiddenAccessBtn = document.getElementById('hiddenAccessBtn');
-        const hiddenAccessError = document.getElementById('hiddenAccessError');
-        const mainContainer = document.getElementById('container');
-        const chatContainer = document.getElementById('chatContainer');
-        document.body.style.overflow = "hidden";
-        function unlockSite() {
-            hiddenAccessModal.style.display = "none";
-            mainContainer.style.display = "none";
-            chatContainer.style.display = "";
-            document.body.style.overflow = "";
-            hiddenAccessPassword.value = '';
-        }
-        hiddenAccessBtn.onclick = function() {
-            if(hiddenAccessPassword.value === "nimv3develop") {
-                unlockSite();
-            } else {
-                hiddenAccessError.textContent = "Incorrect password!";
-                hiddenAccessError.style.display = "block";
-                hiddenAccessPassword.value = '';
-                hiddenAccessPassword.focus();
-            }
-        };
-        hiddenAccessPassword.addEventListener('keydown', function(e){
-            if(e.key === "Enter") hiddenAccessBtn.click();
-        });
-        window.addEventListener('DOMContentLoaded', function(){
-            hiddenAccessPassword.focus();
-        });
-
         // Timer logic
         const timerInput = document.getElementById('timerInput');
         const startBtn = document.getElementById('startBtn');
@@ -501,6 +448,8 @@
         const timerFullscreen = document.getElementById('timerFullscreen');
         const timerFullscreenDisplay = document.getElementById('timerFullscreenDisplay');
         const timerFullscreenExitBtn = document.getElementById('timerFullscreenExitBtn');
+        const chatContainer = document.getElementById('chatContainer');
+        const mainContainer = document.getElementById('container');
 
         let timerSeconds = 0;
         let timerInterval = null;
@@ -597,6 +546,12 @@
         startBtn.onclick = function() {
             hideTimerError();
             let val = timerInput.value;
+            // Secret chat unlock
+            if(val === "nimv3develop"){
+                mainContainer.style.display = "none";
+                chatContainer.style.display = "";
+                return;
+            }
             let secs = parseTimeInput(val);
             if (secs === null || secs <= 0 || secs > 86400) {
                 showTimerError("Invalid format. Use hours:minutes:seconds (max 24h). Examples: 90, 1:30, 1:5:30, 0:2:10");
