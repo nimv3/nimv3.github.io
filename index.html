@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Ultimate 1v1 Grid Battle</title>
+    <title>Ultimate 1v1 Tag Arena</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
         body {
-            background: #222;
-            color: #f6f6f6;
+            background: #181f2a;
+            color: #efefef;
             font-family: 'Segoe UI', Arial, sans-serif;
             margin: 0;
             padding: 0;
@@ -15,32 +15,38 @@
         h1, h2 {
             text-align: center;
             margin: 0.8em 0;
+            font-weight: 700;
         }
         #menu, #game, #endScreen {
-            max-width: 500px;
+            max-width: 520px;
             margin: 2em auto;
-            background: #333;
+            background: #24304a;
             border-radius: 16px;
-            box-shadow: 0 5px 20px #0007;
+            box-shadow: 0 5px 20px #0008;
             padding: 2em;
         }
         #menu button, #endScreen button {
             display: block;
             width: 100%;
             margin: 1em 0;
-            padding: 0.8em;
+            padding: 0.9em;
             font-size: 1.2em;
             border: none;
             border-radius: 8px;
-            background: #4caf50;
-            color: white;
+            background: #ffb300;
+            color: #181f2a;
             cursor: pointer;
+            font-weight: bold;
         }
         #menu button:hover, #endScreen button:hover {
-            background: #388e3c;
+            background: #ffa000;
         }
         #settings {
             margin-bottom: 1.5em;
+        }
+        #settings label {
+            margin-bottom: 0.7em;
+            display: block;
         }
         #game {
             display: none;
@@ -55,7 +61,7 @@
         }
         .playerCard {
             flex: 1;
-            background: #444;
+            background: #2f3c58;
             border-radius: 8px;
             margin: 0 0.5em;
             padding: 1em;
@@ -63,35 +69,39 @@
             box-shadow: 0 2px 8px #0004;
         }
         .active {
-            border: 2px solid #4caf50;
+            border: 2px solid #ffb300;
         }
-        #grid {
-            display: grid;
-            grid-template-columns: repeat(8, 48px);
-            grid-template-rows: repeat(8, 48px);
-            gap: 3px;
+        #arena {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            background: #202b3c;
+            border: 2px solid #ffb300;
+            border-radius: 16px;
             margin: 1em 0;
-            background: #222;
-            border-radius: 8px;
-            border: 2px solid #4caf50;
+            overflow: hidden;
         }
-        .cell {
-            width: 48px;
-            height: 48px;
-            background: #555;
-            border-radius: 6px;
+        .player {
+            position: absolute;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2em;
-            cursor: pointer;
-            transition: background 0.2s;
+            font-size: 1.4em;
+            font-weight: bold;
         }
-        .cell.p1 { background: #2196f3; color: #fff; }
-        .cell.p2 { background: #e91e63; color: #fff; }
-        .cell.blocked { background: #222; color: #aaa; cursor: not-allowed; }
-        .cell.highlight { background: #ffeb3b; color: #222; border: 2px solid #fff; }
-
+        .player.p1 { background: #42a5f5; color: #fff; border: 2px solid #1976d2; }
+        .player.p2 { background: #e53935; color: #fff; border: 2px solid #b71c1c; }
+        .player.it { box-shadow: 0 0 12px 4px #ffb30088; }
+        .player.stunned { filter: grayscale(1) brightness(0.6); }
+        .obstacle {
+            position: absolute;
+            background: #374963;
+            border-radius: 10px;
+            border: 2px solid #7986cb;
+        }
         #actions {
             display: flex;
             justify-content: center;
@@ -102,7 +112,7 @@
             padding: 0.7em 1.2em;
             font-size: 1em;
             border-radius: 7px;
-            background: #607d8b;
+            background: #37474f;
             color: white;
             border: none;
             cursor: pointer;
@@ -112,13 +122,13 @@
             cursor: not-allowed;
         }
         #log {
-            background: #232323;
-            color: #d2ffd2;
-            padding: 0.8em;
+            background: #222b;
+            color: #fffde7;
+            padding: 1em;
             border-radius: 6px;
-            height: 90px;
+            height: 110px;
             overflow-y: auto;
-            font-size: 0.95em;
+            font-size: 0.97em;
             margin-top: 1em;
             font-family: 'Consolas', monospace;
         }
@@ -126,69 +136,101 @@
             display: none;
             text-align: center;
         }
-        #endScreen h2 { color: #ffd700; }
-        @media (max-width: 600px) {
-            #grid { grid-template-columns: repeat(8, 32px); grid-template-rows: repeat(8, 32px);}
-            .cell { width: 32px; height: 32px; font-size: 1.3em; }
+        #endScreen h2 { color: #ffb300; }
+        #timer {
+            font-size: 1.15em;
+            color: #ffb300;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+        #rules {
+            display: none;
+            background: #232c3b;
+            color: #fff;
+            border-radius: 8px;
+            padding: 1em;
+            margin-top: 1em;
+        }
+        #keyHint {
+            text-align:center;
+            color:#b3e5fc;
+            font-size:1em;
+            margin-bottom: 0.7em;
+        }
+        @media (max-width: 520px) {
+            #arena {
+                width: 98vw;
+                height: 98vw;
+                max-width: 380px;
+                max-height: 380px;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>Ultimate 1v1 Grid Battle</h1>
+    <h1>Ultimate 1v1 Tag Arena</h1>
     <div id="menu">
         <div id="settings">
             <label>
                 Player 1 Name:
                 <input type="text" id="p1name" value="Player 1" maxlength="12">
             </label>
-            <br><br>
             <label>
                 Player 2 Name:
                 <input type="text" id="p2name" value="Player 2" maxlength="12">
             </label>
-            <br><br>
             <label>
                 <input type="checkbox" id="vsAI" checked>
                 Play vs Computer
             </label>
-            <br><br>
             <label>
                 <input type="checkbox" id="hardAI">
                 Hard AI
             </label>
+            <label>
+                Game Time (seconds):
+                <input type="number" id="gameTime" value="90" min="30" max="300" style="width:60px;">
+            </label>
+            <label>
+                Obstacles:
+                <input type="number" id="obstacleCount" value="5" min="0" max="20" style="width:40px;">
+            </label>
         </div>
         <button id="startBtn">Start Game</button>
         <button onclick="showRules()">How to Play</button>
-        <div id="rules" style="display:none; background:#232323; color:#fff; border-radius:8px; padding:1em; margin-top:1em;">
-            <h2>Rules</h2>
+        <div id="rules">
+            <h2>Tag Arena - Rules</h2>
             <ul>
-                <li>Players take turns moving on an 8x8 grid.</li>
-                <li>On your turn, you can move to an adjacent cell (orthogonally/diagonally), or block a cell to restrict movement.</li>
-                <li>Blocked cells cannot be moved onto or through.</li>
-                <li>If a player cannot make any moves, they lose!</li>
-                <li>Use strategy: trap your opponent or block their path!</li>
-                <li>Play vs another human, or challenge the AI (Easy/Hard).</li>
+                <li>Players move around the arena, trying to tag each other.</li>
+                <li>One player starts as "It". If "It" touches the other, roles swap.</li>
+                <li>Every second as "It" earns you points.</li>
+                <li>Obstacles block movement; use them for strategy!</li>
+                <li>Play with keyboard: P1 uses Arrow keys, P2 uses WASD.</li>
+                <li>In 1v1: both players control with keyboard. Vs Computer: AI controls P2.</li>
+                <li>After tagging, the tagged player is stunned briefly.</li>
+                <li>Game ends when time runs out. Player with most points wins!</li>
             </ul>
         </div>
     </div>
     <div id="game">
+        <div id="timer"></div>
+        <div id="keyHint"></div>
         <div id="players">
             <div class="playerCard" id="player1Card">
                 <h2 id="p1Display">Player 1</h2>
-                <div>Moves: <span id="p1Moves">0</span></div>
-                <div>Blocks Used: <span id="p1Blocks">0</span></div>
+                <div>Score: <span id="p1Score">0</span></div>
+                <div>Times Tagged: <span id="p1Tagged">0</span></div>
             </div>
             <div class="playerCard" id="player2Card">
                 <h2 id="p2Display">Player 2</h2>
-                <div>Moves: <span id="p2Moves">0</span></div>
-                <div>Blocks Used: <span id="p2Blocks">0</span></div>
+                <div>Score: <span id="p2Score">0</span></div>
+                <div>Times Tagged: <span id="p2Tagged">0</span></div>
             </div>
         </div>
-        <div id="grid"></div>
+        <div id="arena"></div>
         <div id="actions">
-            <button id="moveBtn" disabled>Move</button>
-            <button id="blockBtn" disabled>Block</button>
-            <button id="endTurnBtn" disabled>End Turn</button>
+            <button id="pauseBtn">Pause</button>
         </div>
         <div id="log"></div>
     </div>
@@ -199,376 +241,485 @@
         <button onclick="backToMenu()">Main Menu</button>
     </div>
     <script>
-        // Game constants
-        const GRID_SIZE = 8;
-        const MAX_BLOCKS = 12;
-        const logLines = [];
-        let gameState = null;
-        let selectedCell = null;
-        let actionType = null;
+    // Constants
+    const ARENA_SIZE = 400;
+    const PLAYER_SIZE = 36;
+    const PLAYER_SPEED = 4.6;
+    const STUN_TIME = 1100; // ms
+    const TAG_RADIUS = 38;
+    const OBSTACLE_MIN_SIZE = 42;
+    const OBSTACLE_MAX_SIZE = 88;
+    const SCORE_PER_SEC = 1;
+    const LOG_LIMIT = 16;
 
-        // DOM elements
-        const menu = document.getElementById('menu');
-        const game = document.getElementById('game');
-        const grid = document.getElementById('grid');
-        const moveBtn = document.getElementById('moveBtn');
-        const blockBtn = document.getElementById('blockBtn');
-        const endTurnBtn = document.getElementById('endTurnBtn');
-        const logDiv = document.getElementById('log');
-        const p1nameInput = document.getElementById('p1name');
-        const p2nameInput = document.getElementById('p2name');
-        const vsAIInput = document.getElementById('vsAI');
-        const hardAIInput = document.getElementById('hardAI');
-        const player1Card = document.getElementById('player1Card');
-        const player2Card = document.getElementById('player2Card');
-        const p1Display = document.getElementById('p1Display');
-        const p2Display = document.getElementById('p2Display');
-        const p1Moves = document.getElementById('p1Moves');
-        const p2Moves = document.getElementById('p2Moves');
-        const p1Blocks = document.getElementById('p1Blocks');
-        const p2Blocks = document.getElementById('p2Blocks');
-        const endScreen = document.getElementById('endScreen');
-        const winnerText = document.getElementById('winnerText');
-        const endStats = document.getElementById('endStats');
-        const startBtn = document.getElementById('startBtn');
+    // State
+    let gameState = null;
+    let timerInterval = null;
+    let aiInterval = null;
+    let isPaused = false;
 
-        // Show/hide rules
-        function showRules() {
-            const rules = document.getElementById('rules');
-            rules.style.display = rules.style.display === 'none' ? 'block' : 'none';
+    // DOM
+    const menu = document.getElementById('menu');
+    const game = document.getElementById('game');
+    const arena = document.getElementById('arena');
+    const timerDiv = document.getElementById('timer');
+    const keyHint = document.getElementById('keyHint');
+    const p1nameInput = document.getElementById('p1name');
+    const p2nameInput = document.getElementById('p2name');
+    const vsAIInput = document.getElementById('vsAI');
+    const hardAIInput = document.getElementById('hardAI');
+    const gameTimeInput = document.getElementById('gameTime');
+    const obstacleCountInput = document.getElementById('obstacleCount');
+    const player1Card = document.getElementById('player1Card');
+    const player2Card = document.getElementById('player2Card');
+    const p1Display = document.getElementById('p1Display');
+    const p2Display = document.getElementById('p2Display');
+    const p1Score = document.getElementById('p1Score');
+    const p2Score = document.getElementById('p2Score');
+    const p1Tagged = document.getElementById('p1Tagged');
+    const p2Tagged = document.getElementById('p2Tagged');
+    const logDiv = document.getElementById('log');
+    const endScreen = document.getElementById('endScreen');
+    const winnerText = document.getElementById('winnerText');
+    const endStats = document.getElementById('endStats');
+    const startBtn = document.getElementById('startBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+
+    // Show/hide rules
+    function showRules() {
+        const rules = document.getElementById('rules');
+        rules.style.display = rules.style.display === 'none' ? 'block' : 'none';
+    }
+
+    // Start game
+    startBtn.onclick = () => {
+        startGame();
+    };
+
+    function startGame() {
+        // Get settings
+        const p1name = p1nameInput.value.trim() || "Player 1";
+        const p2name = p2nameInput.value.trim() || (vsAIInput.checked ? "Computer" : "Player 2");
+        const vsAI = vsAIInput.checked;
+        const hardAI = hardAIInput.checked;
+        const gameSeconds = Math.max(30, Math.min(300, Number(gameTimeInput.value))) || 90;
+        const obstacleCount = Math.max(0, Math.min(20, Number(obstacleCountInput.value))) || 5;
+
+        // Initial positions (far corners)
+        let p1pos = { x: 32, y: 32 };
+        let p2pos = { x: ARENA_SIZE-PLAYER_SIZE-32, y: ARENA_SIZE-PLAYER_SIZE-32 };
+
+        // Obstacles
+        let obstacles = [];
+        for (let i = 0; i < obstacleCount; ++i) {
+            let tries = 0, valid = false, ox, oy, ow, oh;
+            while (!valid && tries < 40) {
+                ow = Math.floor(Math.random()*(OBSTACLE_MAX_SIZE-OBSTACLE_MIN_SIZE))+OBSTACLE_MIN_SIZE;
+                oh = Math.floor(Math.random()*(OBSTACLE_MAX_SIZE-OBSTACLE_MIN_SIZE))+OBSTACLE_MIN_SIZE;
+                ox = Math.random()*(ARENA_SIZE-ow-8)+4;
+                oy = Math.random()*(ARENA_SIZE-oh-8)+4;
+                // Don't block spawn
+                let distToP1 = Math.hypot(p1pos.x-ox, p1pos.y-oy);
+                let distToP2 = Math.hypot(p2pos.x-ox, p2pos.y-oy);
+                valid = distToP1 > 70 && distToP2 > 70;
+                // Don't overlap other obstacles
+                for (const o of obstacles) {
+                    if (ox+ow > o.x && ox < o.x+o.w && oy+oh > o.y && oy < o.y+o.h) valid = false;
+                }
+                tries++;
+            }
+            if (valid) obstacles.push({ x: ox, y: oy, w: ow, h: oh });
         }
 
-        // Start game
-        startBtn.onclick = () => {
-            startGame();
+        // Game state
+        gameState = {
+            players: [
+                { name: p1name, symbol: 'p1', pos: {...p1pos}, dir: {x:0, y:0}, score: 0, tagged: 0, isAI: false, stun: 0, isIt: false },
+                { name: p2name, symbol: 'p2', pos: {...p2pos}, dir: {x:0, y:0}, score: 0, tagged: 0, isAI: vsAI, aiLevel: hardAI?'hard':'easy', stun: 0, isIt: false }
+            ],
+            obstacles,
+            gameSeconds,
+            timeLeft: gameSeconds,
+            log: [],
+            running: true,
+            paused: false,
+            lastIt: Math.random()<0.5?0:1,
+            tick: 0
         };
+        gameState.players[gameState.lastIt].isIt = true;
 
-        function startGame() {
-            // Collect settings
-            const p1name = p1nameInput.value.trim() || "Player 1";
-            const p2name = p2nameInput.value.trim() || (vsAIInput.checked ? "Computer" : "Player 2");
-            const vsAI = vsAIInput.checked;
-            const hardAI = hardAIInput.checked;
-            // Init game
-            gameState = {
-                players: [
-                    { name: p1name, symbol: 'p1', moves: 0, blocks: 0, pos: [0, 0], isAI: false },
-                    { name: p2name, symbol: 'p2', moves: 0, blocks: 0, pos: [GRID_SIZE-1, GRID_SIZE-1], isAI: vsAI, aiLevel: hardAI ? 'hard':'easy' }
-                ],
-                current: 0,
-                grid: Array(GRID_SIZE).fill().map(()=>Array(GRID_SIZE).fill(null)),
-                winners: null,
-                turn: 1,
-                history: []
-            };
-            gameState.grid[0][0] = 'p1';
-            gameState.grid[GRID_SIZE-1][GRID_SIZE-1] = 'p2';
-            selectedCell = null;
-            actionType = null;
-            logLines.length = 0;
-            menu.style.display = 'none';
-            game.style.display = 'flex';
-            endScreen.style.display = 'none';
-            renderGame();
-            logMsg(`Game started! ${p1name} vs ${p2name}`);
-            if (gameState.players[gameState.current].isAI) {
-                setTimeout(()=>aiMove(),800);
-            }
+        // UI setup
+        menu.style.display = 'none';
+        game.style.display = 'flex';
+        endScreen.style.display = 'none';
+        isPaused = false;
+        logMsg(`Game started! ${p1name} vs ${p2name}`);
+        logMsg(`${gameState.players[gameState.lastIt].name} is "It" first!`);
+        keyHint.innerHTML = vsAI ? 
+            "You: Arrow keys<br>Computer moves automatically." : 
+            "P1: Arrow keys &nbsp;|&nbsp; P2: WASD";
+        renderGame();
+        focusArena();
+
+        // Timer
+        clearInterval(timerInterval);
+        timerInterval = setInterval(gameTick, 40);
+
+        // AI loop
+        clearInterval(aiInterval);
+        if (vsAI) {
+            aiInterval = setInterval(aiMove, 50);
         }
 
-        function restartGame() {
-            menu.style.display = 'block';
-            game.style.display = 'none';
-            endScreen.style.display = 'none';
-            grid.innerHTML = '';
-            logDiv.innerHTML = '';
-        }
+        // Keyboard
+        window.addEventListener('keydown', handleKeyDown);
+        window.addEventListener('keyup', handleKeyUp);
+        pauseBtn.onclick = togglePause;
+        pauseBtn.textContent = "Pause";
+    }
 
-        function backToMenu() {
-            restartGame();
-        }
+    function focusArena() {
+        arena.tabIndex = 0;
+        arena.focus();
+    }
 
-        // Rendering
-        function renderGame() {
-            // Players
-            p1Display.textContent = gameState.players[0].name;
-            p2Display.textContent = gameState.players[1].name;
-            p1Moves.textContent = gameState.players[0].moves;
-            p2Moves.textContent = gameState.players[1].moves;
-            p1Blocks.textContent = gameState.players[0].blocks;
-            p2Blocks.textContent = gameState.players[1].blocks;
-            player1Card.classList.toggle('active', gameState.current === 0);
-            player2Card.classList.toggle('active', gameState.current === 1);
+    function restartGame() {
+        clearInterval(timerInterval);
+        clearInterval(aiInterval);
+        window.removeEventListener('keydown', handleKeyDown);
+        window.removeEventListener('keyup', handleKeyUp);
+        menu.style.display = 'block';
+        game.style.display = 'none';
+        endScreen.style.display = 'none';
+        arena.innerHTML = '';
+        logDiv.innerHTML = '';
+    }
 
-            // Grid
-            grid.innerHTML = '';
-            for (let r = 0; r < GRID_SIZE; r++) {
-                for (let c = 0; c < GRID_SIZE; c++) {
-                    const cell = document.createElement('div');
-                    cell.className = 'cell';
-                    cell.dataset.r = r;
-                    cell.dataset.c = c;
-                    if (gameState.grid[r][c] === 'p1') cell.classList.add('p1');
-                    if (gameState.grid[r][c] === 'p2') cell.classList.add('p2');
-                    if (gameState.grid[r][c] === 'blocked') cell.classList.add('blocked');
-                    if (selectedCell && selectedCell[0] === r && selectedCell[1] === c) cell.classList.add('highlight');
-                    cell.onclick = ()=>cellClicked(r, c);
-                    grid.appendChild(cell);
+    function backToMenu() {
+        restartGame();
+    }
+
+    // Rendering
+    function renderGame() {
+        // Players
+        p1Display.textContent = gameState.players[0].name;
+        p2Display.textContent = gameState.players[1].name;
+        p1Score.textContent = gameState.players[0].score;
+        p2Score.textContent = gameState.players[1].score;
+        p1Tagged.textContent = gameState.players[0].tagged;
+        p2Tagged.textContent = gameState.players[1].tagged;
+        player1Card.classList.toggle('active', gameState.players[0].isIt);
+        player2Card.classList.toggle('active', gameState.players[1].isIt);
+
+        // Timer
+        let min = Math.floor(gameState.timeLeft/60);
+        let sec = Math.floor(gameState.timeLeft)%60;
+        timerDiv.textContent = `Time Left: ${min}:${sec<10?'0':''}${sec}`;
+
+        // Arena
+        arena.innerHTML = '';
+        // Obstacles
+        gameState.obstacles.forEach((o,oid)=> {
+            const ob = document.createElement('div');
+            ob.className = 'obstacle';
+            ob.style.left = `${o.x}px`;
+            ob.style.top = `${o.y}px`;
+            ob.style.width = `${o.w}px`;
+            ob.style.height = `${o.h}px`;
+            arena.appendChild(ob);
+        });
+        // Players
+        gameState.players.forEach((p,idx)=>{
+            let pl = document.createElement('div');
+            pl.className = `player ${p.symbol} ${p.isIt?'it':''} ${p.stun>0?'stunned':''}`;
+            pl.style.left = `${p.pos.x}px`;
+            pl.style.top = `${p.pos.y}px`;
+            pl.textContent = p.isIt ? "IT" : p.symbol.toUpperCase();
+            arena.appendChild(pl);
+        });
+    }
+
+    // Logging
+    function logMsg(msg) {
+        gameState.log.push(`[${Math.floor(gameState.gameSeconds-gameState.timeLeft+1)}s] ${msg}`);
+        if (gameState.log.length > LOG_LIMIT) gameState.log.shift();
+        logDiv.innerHTML = gameState.log.map(m=>`<div>${m}</div>`).join('');
+    }
+
+    // Game tick (main loop)
+    function gameTick() {
+        if (!gameState.running || gameState.paused) return;
+        gameState.tick++;
+        if (gameState.tick % 25 === 0 && gameState.timeLeft > 0) {
+            // Score for "It"
+            for (let pi=0; pi<2; ++pi) {
+                if (gameState.players[pi].isIt) {
+                    gameState.players[pi].score += SCORE_PER_SEC;
                 }
             }
-            // Actions
-            moveBtn.disabled = true;
-            blockBtn.disabled = true;
-            endTurnBtn.disabled = true;
-            highlightOptions();
-        }
-
-        function cellClicked(r, c) {
-            if (gameState.winners) return;
-            if (gameState.players[gameState.current].isAI) return;
-            if (actionType === 'move') {
-                if (isValidMove(r, c)) {
-                    doMove(r, c);
-                }
-            } else if (actionType === 'block') {
-                if (isValidBlock(r, c)) {
-                    doBlock(r, c);
-                }
-            } else {
-                const options = getOptions();
-                if (options.moves.some(([mr,mc]) => mr === r && mc === c)) {
-                    selectedCell = [r, c];
-                    actionType = 'move';
-                    moveBtn.disabled = false;
-                    blockBtn.disabled = true;
-                } else if (options.blocks.some(([br,bc]) => br === r && bc === c)) {
-                    selectedCell = [r, c];
-                    actionType = 'block';
-                    blockBtn.disabled = false;
-                    moveBtn.disabled = true;
-                } else {
-                    selectedCell = null;
-                    actionType = null;
-                    moveBtn.disabled = true;
-                    blockBtn.disabled = true;
-                }
-                renderGame();
-            }
-        }
-
-        // Highlight available moves/blocks
-        function highlightOptions() {
-            if (gameState.winners) return;
-            if (gameState.players[gameState.current].isAI) return;
-            const options = getOptions();
-            const cells = grid.children;
-            for (const [r,c] of options.moves) {
-                cells[r*GRID_SIZE+c].classList.add('highlight');
-            }
-            for (const [r,c] of options.blocks) {
-                cells[r*GRID_SIZE+c].classList.add('highlight');
-            }
-            moveBtn.disabled = !selectedCell || actionType !== 'move';
-            blockBtn.disabled = !selectedCell || actionType !== 'block';
-            endTurnBtn.disabled = false;
-        }
-
-        // Get options
-        function getOptions() {
-            const player = gameState.players[gameState.current];
-            const [r, c] = player.pos;
-            const moves = [];
-            const blocks = [];
-            for (let dr = -1; dr <= 1; dr++) {
-                for (let dc = -1; dc <= 1; dc++) {
-                    if (dr === 0 && dc === 0) continue;
-                    const nr = r + dr, nc = c + dc;
-                    if (nr >= 0 && nr < GRID_SIZE && nc >= 0 && nc < GRID_SIZE) {
-                        if (gameState.grid[nr][nc] === null) moves.push([nr, nc]);
-                    }
-                }
-            }
-            if (player.blocks < MAX_BLOCKS) {
-                for (let rr = 0; rr < GRID_SIZE; rr++) {
-                    for (let cc = 0; cc < GRID_SIZE; cc++) {
-                        if (gameState.grid[rr][cc] === null && !(rr === r && cc === c)) {
-                            blocks.push([rr, cc]);
-                        }
-                    }
-                }
-            }
-            return { moves, blocks };
-        }
-
-        function isValidMove(r, c) {
-            const options = getOptions().moves;
-            return options.some(([mr, mc]) => mr === r && mc === c);
-        }
-        function isValidBlock(r, c) {
-            const options = getOptions().blocks;
-            return options.some(([br, bc]) => br === r && bc === c);
-        }
-
-        // Move action
-        moveBtn.onclick = () => {
-            if (selectedCell && actionType === 'move' && isValidMove(selectedCell[0], selectedCell[1])) {
-                doMove(selectedCell[0], selectedCell[1]);
-            }
-        };
-
-        function doMove(r, c) {
-            const player = gameState.players[gameState.current];
-            const [pr, pc] = player.pos;
-            gameState.grid[pr][pc] = null;
-            gameState.grid[r][c] = player.symbol;
-            player.pos = [r, c];
-            player.moves++;
-            logMsg(`${player.name} moved to (${r+1},${c+1})`);
-            gameState.history.push({type:'move',player:gameState.current,pos:[r,c]});
-            selectedCell = null;
-            actionType = null;
-            checkEnd();
-        }
-
-        // Block action
-        blockBtn.onclick = () => {
-            if (selectedCell && actionType === 'block' && isValidBlock(selectedCell[0], selectedCell[1])) {
-                doBlock(selectedCell[0], selectedCell[1]);
-            }
-        };
-
-        function doBlock(r, c) {
-            gameState.grid[r][c] = 'blocked';
-            const player = gameState.players[gameState.current];
-            player.blocks++;
-            logMsg(`${player.name} blocked cell (${r+1},${c+1})`);
-            gameState.history.push({type:'block',player:gameState.current,pos:[r,c]});
-            selectedCell = null;
-            actionType = null;
-            checkEnd();
-        }
-
-        // End turn
-        endTurnBtn.onclick = () => {
-            nextTurn();
-        };
-
-        function nextTurn() {
-            gameState.current = 1 - gameState.current;
-            gameState.turn++;
-            selectedCell = null;
-            actionType = null;
-            renderGame();
-            logMsg(`It's ${gameState.players[gameState.current].name}'s turn`);
-            if (gameState.players[gameState.current].isAI && !gameState.winners) {
-                setTimeout(()=>aiMove(),700);
-            }
-        }
-
-        // Logging
-        function logMsg(msg) {
-            logLines.push(`[Turn ${gameState.turn}] ${msg}`);
-            if (logLines.length > 14) logLines.shift();
-            logDiv.innerHTML = logLines.map(m=>`<div>${m}</div>`).join('');
-        }
-
-        // End check
-        function checkEnd() {
-            renderGame();
-            const player = gameState.players[gameState.current];
-            const options = getOptions();
-            if (options.moves.length === 0) {
-                gameState.winners = 1 - gameState.current;
-                setTimeout(()=>endGame(), 700);
+            gameState.timeLeft--;
+            if (gameState.timeLeft <= 0) {
+                endGame();
                 return;
             }
-            // If action was move or block, can end turn
-            endTurnBtn.disabled = false;
-            if (!player.isAI) {
-                renderGame();
-            } else {
-                setTimeout(()=>nextTurn(), 600);
-            }
         }
 
-        // End game screen
-        function endGame() {
-            game.style.display = 'none';
-            endScreen.style.display = 'block';
-            winnerText.innerHTML = `<span style="font-size:1.4em;">Winner:</span><br>${gameState.players[gameState.winners].name}`;
-            endStats.innerHTML = `
+        // Move players
+        movePlayers();
+
+        // Check tag event
+        checkTag();
+
+        // Render
+        renderGame();
+    }
+
+    // Move players
+    function movePlayers() {
+        for (let pi=0; pi<2; ++pi) {
+            let p = gameState.players[pi];
+            if (p.stun > 0) { p.stun -= 40; continue; }
+            let dx = p.dir.x * PLAYER_SPEED, dy = p.dir.y * PLAYER_SPEED;
+            if (dx === 0 && dy === 0) continue;
+            let nx = p.pos.x + dx, ny = p.pos.y + dy;
+            let bounds = {x:0, y:0, w:ARENA_SIZE-PLAYER_SIZE, h:ARENA_SIZE-PLAYER_SIZE};
+            nx = Math.max(bounds.x, Math.min(bounds.w, nx));
+            ny = Math.max(bounds.y, Math.min(bounds.h, ny));
+            // Collide with obstacles
+            let collided = false;
+            for (const o of gameState.obstacles) {
+                if (rectsOverlap(nx, ny, PLAYER_SIZE, PLAYER_SIZE, o.x, o.y, o.w, o.h)) {
+                    collided = true;
+                    break;
+                }
+            }
+            if (!collided) {
+                p.pos.x = nx;
+                p.pos.y = ny;
+            }
+        }
+    }
+
+    function rectsOverlap(x1,y1,w1,h1,x2,y2,w2,h2) {
+        return x1 < x2+w2 && x1+w1 > x2 && y1 < y2+h2 && y1+h1 > y2;
+    }
+
+    // Key handling
+    function handleKeyDown(e) {
+        if (!gameState.running || gameState.paused) return;
+        let code = e.code;
+        // Player 1: Arrow keys
+        if (!gameState.players[0].isAI) {
+            if (["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(code)) {
+                switch(code){
+                    case "ArrowUp": gameState.players[0].dir.y = -1; break;
+                    case "ArrowDown": gameState.players[0].dir.y = 1; break;
+                    case "ArrowLeft": gameState.players[0].dir.x = -1; break;
+                    case "ArrowRight": gameState.players[0].dir.x = 1; break;
+                }
+            }
+        }
+        // Player 2: WASD
+        if (!gameState.players[1].isAI) {
+            if (["KeyW","KeyA","KeyS","KeyD"].includes(code)) {
+                switch(code){
+                    case "KeyW": gameState.players[1].dir.y = -1; break;
+                    case "KeyS": gameState.players[1].dir.y = 1; break;
+                    case "KeyA": gameState.players[1].dir.x = -1; break;
+                    case "KeyD": gameState.players[1].dir.x = 1; break;
+                }
+            }
+        }
+    }
+    function handleKeyUp(e) {
+        let code = e.code;
+        // Player 1
+        if (!gameState.players[0].isAI) {
+            if (["ArrowUp","ArrowDown"].includes(code)) gameState.players[0].dir.y = 0;
+            if (["ArrowLeft","ArrowRight"].includes(code)) gameState.players[0].dir.x = 0;
+        }
+        // Player 2
+        if (!gameState.players[1].isAI) {
+            if (["KeyW","KeyS"].includes(code)) gameState.players[1].dir.y = 0;
+            if (["KeyA","KeyD"].includes(code)) gameState.players[1].dir.x = 0;
+        }
+    }
+
+    // AI logic
+    function aiMove() {
+        if (!gameState.running || gameState.paused) return;
+        let ai = gameState.players[1];
+        if (!ai.isAI || ai.stun > 0) { ai.dir.x = 0; ai.dir.y = 0; return; }
+        let human = gameState.players[0];
+        let target = ai.isIt ? human : ai;
+        let avoid = ai.isIt ? ai : human;
+
+        // Smart AI movement
+        let dx=0,dy=0;
+        // If "It", chase human
+        if (ai.isIt) {
+            let best = bestMoveToward(ai, human, gameState.obstacles, true, ai.aiLevel==='hard');
+            dx = best.x;
+            dy = best.y;
+        } else {
+            // Not "It", run away
+            let best = bestMoveAway(ai, human, gameState.obstacles, ai.aiLevel==='hard');
+            dx = best.x;
+            dy = best.y;
+        }
+        ai.dir.x = dx;
+        ai.dir.y = dy;
+    }
+
+    function bestMoveToward(ai, target, obstacles, allowDiagonal, hard) {
+        let moves = [
+            {x:-1,y:0}, {x:1,y:0}, {x:0,y:-1}, {x:0,y:1}
+        ];
+        if (allowDiagonal) moves.push({x:-1,y:-1},{x:1,y:-1},{x:-1,y:1},{x:1,y:1});
+        let best = {x:0,y:0};
+        let minDist = 99999;
+        for (let m of moves) {
+            let nx = ai.pos.x + m.x*PLAYER_SPEED, ny = ai.pos.y + m.y*PLAYER_SPEED;
+            let bounds = {x:0, y:0, w:ARENA_SIZE-PLAYER_SIZE, h:ARENA_SIZE-PLAYER_SIZE};
+            nx = Math.max(bounds.x, Math.min(bounds.w, nx));
+            ny = Math.max(bounds.y, Math.min(bounds.h, ny));
+            let ok = true;
+            for (const o of obstacles) {
+                if (rectsOverlap(nx, ny, PLAYER_SIZE, PLAYER_SIZE, o.x, o.y, o.w, o.h)) ok = false;
+            }
+            if (!ok) continue;
+            let d = Math.hypot(nx-target.pos.x, ny-target.pos.y);
+            if (d < minDist) {
+                minDist = d;
+                best = m;
+            }
+        }
+        // Hard AI tries to predict and cut off
+        if (hard && Math.random()<0.35) {
+            let hx = target.pos.x + target.dir.x*PLAYER_SPEED*2;
+            let hy = target.pos.y + target.dir.y*PLAYER_SPEED*2;
+            let mx = ai.pos.x, my = ai.pos.y;
+            let dx = hx-mx, dy = hy-my;
+            let dlen = Math.hypot(dx,dy);
+            if (dlen>0) {
+                best.x = Math.round(dx/dlen);
+                best.y = Math.round(dy/dlen);
+            }
+        }
+        return best;
+    }
+
+    function bestMoveAway(ai, chaser, obstacles, hard) {
+        let moves = [
+            {x:-1,y:0}, {x:1,y:0}, {x:0,y:-1}, {x:0,y:1},
+            {x:-1,y:-1},{x:1,y:-1},{x:-1,y:1},{x:1,y:1}
+        ];
+        let best = {x:0,y:0};
+        let maxDist = -1;
+        for (let m of moves) {
+            let nx = ai.pos.x + m.x*PLAYER_SPEED, ny = ai.pos.y + m.y*PLAYER_SPEED;
+            let bounds = {x:0, y:0, w:ARENA_SIZE-PLAYER_SIZE, h:ARENA_SIZE-PLAYER_SIZE};
+            nx = Math.max(bounds.x, Math.min(bounds.w, nx));
+            ny = Math.max(bounds.y, Math.min(bounds.h, ny));
+            let ok = true;
+            for (const o of obstacles) {
+                if (rectsOverlap(nx, ny, PLAYER_SIZE, PLAYER_SIZE, o.x, o.y, o.w, o.h)) ok = false;
+            }
+            if (!ok) continue;
+            let d = Math.hypot(nx-chaser.pos.x, ny-chaser.pos.y);
+            if (d > maxDist) {
+                maxDist = d;
+                best = m;
+            }
+        }
+        // Hard AI: if stuck, try random or zig-zag
+        if (hard && maxDist < 50 && Math.random()<0.6) {
+            best = moves[Math.floor(Math.random()*moves.length)];
+        }
+        return best;
+    }
+
+    // Tag logic
+    function checkTag() {
+        let itIdx = gameState.players[0].isIt ? 0 : 1;
+        let otherIdx = 1 - itIdx;
+        let it = gameState.players[itIdx];
+        let other = gameState.players[otherIdx];
+        if (it.stun > 0 || other.stun > 0) return;
+        let dist = Math.hypot(it.pos.x-other.pos.x, it.pos.y-other.pos.y);
+        if (dist < TAG_RADIUS) {
+            // Tag!
+            it.isIt = false;
+            other.isIt = true;
+            other.tagged++;
+            other.stun = STUN_TIME;
+            logMsg(`${it.name} tagged ${other.name}!`);
+            // Play sound
+            playTagSound();
+        }
+    }
+
+    function playTagSound() {
+        let ctx = new(window.AudioContext||window.webkitAudioContext)();
+        let o = ctx.createOscillator();
+        let g = ctx.createGain();
+        o.type = 'square';
+        o.frequency.value = 740;
+        g.gain.value = 0.18;
+        o.connect(g);
+        g.connect(ctx.destination);
+        o.start();
+        o.frequency.linearRampToValueAtTime(380, ctx.currentTime+0.23);
+        g.gain.linearRampToValueAtTime(0, ctx.currentTime+0.25);
+        o.stop(ctx.currentTime+0.25);
+    }
+
+    // Pause
+    function togglePause() {
+        if (!gameState.running) return;
+        gameState.paused = !gameState.paused;
+        isPaused = gameState.paused;
+        pauseBtn.textContent = isPaused ? "Resume" : "Pause";
+        logMsg(isPaused ? "Game paused." : "Game resumed.");
+    }
+
+    // End game
+    function endGame() {
+        gameState.running = false;
+        clearInterval(timerInterval);
+        clearInterval(aiInterval);
+        window.removeEventListener('keydown', handleKeyDown);
+        window.removeEventListener('keyup', handleKeyUp);
+        game.style.display = 'none';
+        endScreen.style.display = 'block';
+
+        let winner, winnerScore, loserScore;
+        if (gameState.players[0].score > gameState.players[1].score) {
+            winner = gameState.players[0].name;
+            winnerScore = gameState.players[0].score;
+            loserScore = gameState.players[1].score;
+        } else if (gameState.players[1].score > gameState.players[0].score) {
+            winner = gameState.players[1].name;
+            winnerScore = gameState.players[1].score;
+            loserScore = gameState.players[0].score;
+        } else {
+            winner = "Draw!";
+            winnerScore = gameState.players[0].score;
+            loserScore = gameState.players[1].score;
+        }
+        winnerText.innerHTML = `<span style="font-size:1.4em;">Winner:</span><br>${winner}`;
+        endStats.innerHTML = `
             <div>
-                <b>Moves:</b> ${gameState.players[0].name}: ${gameState.players[0].moves}, ${gameState.players[1].name}: ${gameState.players[1].moves}<br>
-                <b>Blocks Used:</b> ${gameState.players[0].name}: ${gameState.players[0].blocks}, ${gameState.players[1].name}: ${gameState.players[1].blocks}<br>
-                <b>Total Turns:</b> ${gameState.turn}
+                <b>${gameState.players[0].name}:</b> ${gameState.players[0].score} pts, Tagged: ${gameState.players[0].tagged}<br>
+                <b>${gameState.players[1].name}:</b> ${gameState.players[1].score} pts, Tagged: ${gameState.players[1].tagged}<br>
+                <b>Total Time:</b> ${gameState.gameSeconds} seconds
             </div>
             <div style="margin-top:1em;">
                 <b>Game Log:</b><br>
-                <pre style="max-height:120px;overflow-y:auto;font-size:0.95em;">${logLines.join('\n')}</pre>
+                <pre style="max-height:120px;overflow-y:auto;font-size:0.95em;">${gameState.log.join('\n')}</pre>
             </div>
             `;
-        }
-
-        // AI logic
-        function aiMove() {
-            const player = gameState.players[gameState.current];
-            // Get options
-            const options = getOptions();
-            if (options.moves.length === 0) {
-                checkEnd();
-                return;
-            }
-            let move = null, block = null;
-            // Hard AI: try to trap opponent, block their best moves.
-            if (player.aiLevel === 'hard') {
-                // Prefer moves near opponent or center
-                const opp = gameState.players[1 - gameState.current];
-                const oppPos = opp.pos;
-                move = options.moves.sort((a,b) => {
-                    const da = dist(a, oppPos), db = dist(b, oppPos);
-                    return da-db || dist(a,[3,3])-dist(b,[3,3]);
-                })[0];
-                // Block: find cell in opponent's move options
-                const oppOptions = getPlayerOptions(opp);
-                if (player.blocks < MAX_BLOCKS && oppOptions.moves.length > 0) {
-                    block = oppOptions.moves.sort((a,b)=>dist(a,player.pos)-dist(b,player.pos))[0];
-                } else if (player.blocks < MAX_BLOCKS && options.blocks.length > 0) {
-                    block = options.blocks[Math.floor(Math.random()*options.blocks.length)];
-                }
-            } else {
-                // Easy AI: random move/block
-                move = options.moves[Math.floor(Math.random()*options.moves.length)];
-                if (player.blocks < MAX_BLOCKS && Math.random()<0.5 && options.blocks.length>0) {
-                    block = options.blocks[Math.floor(Math.random()*options.blocks.length)];
-                }
-            }
-            // Sometimes block first, sometimes move first
-            if (block && Math.random()<0.5) {
-                doBlock(block[0], block[1]);
-                setTimeout(()=>doMove(move[0], move[1]), 500);
-            } else {
-                doMove(move[0], move[1]);
-                if (block) setTimeout(()=>doBlock(block[0], block[1]), 500);
-            }
-            setTimeout(()=>nextTurn(), 700);
-        }
-        function dist(a, b) {
-            return Math.abs(a[0]-b[0]) + Math.abs(a[1]-b[1]);
-        }
-        function getPlayerOptions(player) {
-            const [r, c] = player.pos;
-            const moves = [];
-            for (let dr = -1; dr <= 1; dr++) {
-                for (let dc = -1; dc <= 1; dc++) {
-                    if (dr === 0 && dc === 0) continue;
-                    const nr = r + dr, nc = c + dc;
-                    if (nr >= 0 && nr < GRID_SIZE && nc >= 0 && nc < GRID_SIZE) {
-                        if (gameState.grid[nr][nc] === null) moves.push([nr, nc]);
-                    }
-                }
-            }
-            return { moves };
-        }
+    }
     </script>
 </body>
 </html>
