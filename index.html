@@ -209,6 +209,19 @@
         #clearBtn:hover {
             background: #b71c1c;
         }
+        #scrollBottomBtn {
+            width: 100%;
+            background: var(--accent);
+            color: var(--bg);
+            font-size: 1.1em;
+            font-family: 'Montserrat',sans-serif;
+            font-weight: 700;
+            border: none;
+            border-radius: 0.6em;
+            box-shadow: 0 2px 8px #0003;
+            margin-bottom: 1em;
+            cursor: pointer;
+        }
         #wall {
             min-height: calc(var(--space)*2);
             max-height: 50vh;
@@ -397,6 +410,7 @@
             </form>
             <button id="clearBtn" type="button">Clear Wall</button>
         </div>
+        <button id="scrollBottomBtn" type="button">Scroll to Latest</button>
         <div id="wall"></div>
     </div>
     <div id="clearModal">
@@ -415,7 +429,6 @@
         </div>
     </div>
     <script>
-        // Only initialize Firebase ONCE!
         const firebaseConfig = {
             apiKey: "AIzaSyDCtiOEsg0iNAIxkc-wBD_Kh6oRpwqTLQw",
             authDomain: "dffr-f1f5c.firebaseapp.com",
@@ -587,6 +600,7 @@
         const confirmClearBtn = document.getElementById('confirmClearBtn');
         const cancelClearBtn = document.getElementById('cancelClearBtn');
         const clearError = document.getElementById('clearError');
+        const scrollBottomBtn = document.getElementById('scrollBottomBtn');
         let messages = [];
 
         function renderWall() {
@@ -683,6 +697,12 @@
                     confirmClearBtn.click();
                 }
             });
+        }
+
+        if (scrollBottomBtn && wallDiv) {
+            scrollBottomBtn.onclick = function() {
+                wallDiv.scrollTop = wallDiv.scrollHeight;
+            };
         }
     </script>
 </body>
