@@ -107,7 +107,6 @@
             overflow-y: auto;
             padding-top: 0.5em;
             padding-bottom: 1em;
-            /* Messages at top, allow scroll down if overflow */
             display: flex;
             flex-direction: column;
             align-items: stretch;
@@ -182,10 +181,7 @@
         <div id="wall"></div>
     </div>
     <script>
-        // --- Setup: "Backend" with localStorage + polling ---
-        // For a real shared wall: use a backend with database/websockets.
-        // For demo: localStorage + BroadcastChannel for tab sync.
-
+        // --- Setup: "Backend" with localStorage + BroadcastChannel for tab sync ---
         const WALL_KEY = 'golden_wall_msgs';
         let messages = [];
         const wallDiv = document.getElementById('wall');
@@ -205,32 +201,50 @@
             localStorage.setItem(WALL_KEY, JSON.stringify(messages));
         }
 
-        // Render messages
+        // Render messages, only append new ones, don't wipe/re-render
         function renderWall(){
-            wallDiv.innerHTML = '';
-            messages.slice().forEach(msg => {
-                const card = document.createElement('div');
-                card.className = 'msgCard';
-                // Header
-                const hdr = document.createElement('div');
-                hdr.className = 'msgHeader';
-                const name = document.createElement('span');
-                name.className = 'msgName';
-                name.textContent = msg.name;
-                hdr.appendChild(name);
-                const time = document.createElement('span');
-                time.className = 'msgTime';
-                time.textContent = formatDate(msg.time);
-                hdr.appendChild(time);
-                card.appendChild(hdr);
-                // Text
-                const txt = document.createElement('div');
-                txt.className = 'msgText';
-                txt.textContent = msg.text;
-                card.appendChild(txt);
-                wallDiv.appendChild(card);
-            });
-            // After rendering, scroll to the bottom (show the latest message)
+            // If wall is empty, render all
+            if (wallDiv.childElementCount === 0) {
+                messages.forEach(msg => {
+                    appendMessageCard(msg);
+                });
+                scrollWallToBottom();
+                return;
+            }
+            // If messages have changed, only append new
+            let renderedCount = wallDiv.childElementCount;
+            if (messages.length > renderedCount) {
+                for (let i = renderedCount; i < messages.length; ++i) {
+                    appendMessageCard(messages[i]);
+                }
+                scrollWallToBottom();
+            }
+        }
+
+        function appendMessageCard(msg) {
+            const card = document.createElement('div');
+            card.className = 'msgCard';
+            // Header
+            const hdr = document.createElement('div');
+            hdr.className = 'msgHeader';
+            const name = document.createElement('span');
+            name.className = 'msgName';
+            name.textContent = msg.name;
+            hdr.appendChild(name);
+            const time = document.createElement('span');
+            time.className = 'msgTime';
+            time.textContent = formatDate(msg.time);
+            hdr.appendChild(time);
+            card.appendChild(hdr);
+            // Text
+            const txt = document.createElement('div');
+            txt.className = 'msgText';
+            txt.textContent = msg.text;
+            card.appendChild(txt);
+            wallDiv.appendChild(card);
+        }
+
+        function scrollWallToBottom() {
             wallDiv.scrollTop = wallDiv.scrollHeight;
         }
 
@@ -263,7 +277,8 @@
             messages.push(msg);
             messages = messages.slice(-90); // keep last 90
             saveMessages();
-            renderWall();
+            appendMessageCard(msg);
+            scrollWallToBottom();
             textInput.value = '';
             textInput.focus();
             // Broadcast to other tabs
@@ -285,8 +300,11 @@
 
         // Poll for changes (for multiple tabs/users on same device)
         setInterval(()=>{
+            let oldLen = messages.length;
             loadMessages();
-            renderWall();
+            if (messages.length > oldLen) {
+                renderWall();
+            }
         }, 1500);
 
         // Initial load
