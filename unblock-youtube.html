@@ -7,7 +7,6 @@
         body { background:#222b3c; color:#fff; font-family:sans-serif; text-align:center; }
         .btn { display:inline-block; margin:1em; padding:1em 2em; background:#ffd700; color:#181f2a; font-size:1.2em; font-weight:700; border-radius:0.5em; text-decoration:none; cursor:pointer; }
         .box { background:#242f42; margin:2em auto; max-width:480px; padding:2em; border-radius:1em; }
-        input[type="text"] { width:80%; padding:0.7em; font-size:1.1em; border-radius:0.5em; border:none; margin-top:1em; }
         iframe { width:100%; min-height:450px; border-radius:1em; border:none; margin-top:2em; box-shadow:0 2px 18px #0005; background:#181f2a; }
         #fullscreenOverlay {
             display: none;
@@ -19,12 +18,14 @@
             align-items:center;
         }
         #fullscreenIframe {
-            width: 96vw;
-            height: 94vh;
-            border-radius: 1em;
+            width: 100vw;
+            height: 100vh;
+            border-radius: 0;
             border: none;
-            box-shadow: 0 2px 24px #0009;
+            box-shadow: none;
             background: #222b3c;
+            position: absolute;
+            top: 0; left: 0;
         }
         #closeFullscreenBtn {
             position: absolute;
@@ -50,16 +51,7 @@
         function showSearch() {
             document.getElementById('searchFrame').style.display = 'block';
         }
-        function playVideo() {
-            var ytUrl = document.getElementById('ytLink').value.trim();
-            if (!ytUrl || !ytUrl.includes("youtube.com")) {
-                alert("Paste a valid YouTube link!");
-                return;
-            }
-            var teamUrl = "https://michael.team/yt/?url=" + encodeURIComponent(ytUrl);
-            document.getElementById('ytFrame').src = teamUrl;
-            document.getElementById('ytFrame').style.display = 'block';
-        }
+        // Opens a true fullscreen overlay (not a new tab)
         function openCluzeamazingFullscreen() {
             var overlay = document.getElementById('fullscreenOverlay');
             var iframe = document.getElementById('fullscreenIframe');
@@ -79,17 +71,13 @@
 <body>
     <h1>Unblock YouTube Videos</h1>
     <div class="box">
-        <p><b>Step 1:</b> Search for YouTube videos below, then copy the video link.</p>
+        <p><b>Step 1:</b> Search for and watch YouTube videos below.</p>
         <button class="btn" onclick="showSearch()">Search for Videos (in-page)</button>
         <button class="btn" onclick="openCluzeamazingFullscreen()">Search in Fullscreen</button>
         <div id="searchFrame" style="display:none;">
             <iframe src="https://cluzeamazing.krewedegroove.com/" height="450"></iframe>
-            <p style="margin-top:1em;">Type <b>youtube.com</b> in the search bar, find your video, and copy its link.</p>
+            <p style="margin-top:1em;">Type <b>youtube.com</b> in the search bar to find any video.</p>
         </div>
-        <p><b>Step 2:</b> Paste your YouTube link below to watch it unblocked:</p>
-        <input type="text" id="ytLink" placeholder="Paste YouTube video link here" required>
-        <button class="btn" onclick="playVideo()">Watch Video</button>
-        <iframe id="ytFrame" style="display:none;"></iframe>
     </div>
     <div id="fullscreenOverlay">
         <button id="closeFullscreenBtn" onclick="closeCluzeamazingFullscreen()">Close</button>
