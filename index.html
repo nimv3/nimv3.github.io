@@ -19,6 +19,9 @@
             --input: #1a2232;
             --border: #ffd70055;
             --space: calc(var(--base) * var(--golden));
+            --success: #4caf50;
+            --danger: #e53935;
+            --info: #2196f3;
         }
         body {
             margin: 0;
@@ -91,7 +94,7 @@
             border: none;
             border-radius: calc(var(--base)*0.6);
             font-weight: 700;
-            box-shadow: 0 2px 8px #0003;
+            box-shadow: 极 0 2px 8px #0003;
             cursor: pointer;
             transition: background 0.18s;
             margin-top: calc(var(--base)/2);
@@ -241,6 +244,7 @@
             margin-bottom: calc(var(--base)*0.9);
             border-left: 6px solid var(--accent);
             animation: fadeInMsg 0.7s cubic-bezier(.84,0,.93,.68);
+            position: relative;
         }
         @keyframes fadeInMsg {
             from { opacity: 0; transform: translateY(25px);}
@@ -253,7 +257,7 @@
         }
         .msgName {
             font-family: 'Montserrat', sans-serif;
-            color: var(--accent);
+            color: var(--ac极cent);
             font-size: calc(var(--base)*var(--golden)/1.35);
             font-weight: 700;
             margin-right: 0.8em;
@@ -269,6 +273,49 @@
             color: var(--text);
             line-height: 1.618;
             word-break: break-word;
+        }
+        .admin-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: var(--accent);
+            color: var(--bg);
+            font-size: 12px;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: 'Montserrat', sans-serif;
+        }
+        .admin-controls {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            justify-content: flex-end;
+        }
+        .admin-btn {
+            padding: 5px 10px;
+            border-radius: 4px;
+            border: none;
+            font-size: 12px;
+            font-family: 'Montserrat', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .edit-btn {
+            background: var(--info);
+            color: white;
+        }
+        .delete-btn {
+            background: var(--danger);
+            color: white;
+        }
+        .time-btn {
+            background: var(--success);
+            color: white;
+        }
+        .admin-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
         }
         #clearModal {
             display: none;
@@ -378,7 +425,6 @@
         #timerFullscreenExitBtn:hover {
             background: #b71c1c;
         }
-        /* Apps button only for chat page */
         #appsBtn {
             position: fixed;
             left: 25px;
@@ -403,12 +449,11 @@
             background: #ffe066;
             color: #000;
         }
-        /* Notification */
         #notification {
             display: none;
             position: fixed;
             z-index: 10001;
-            left: 0; top: 0; right: 0; bottom: 0;
+            left: 0; top: 0; right: 0; bottom: 极0;
             background: rgba(24,31,42,0.95);
             justify-content: center;
             align-items: center;
@@ -452,9 +497,114 @@
         #notificationContent button:hover {
             background: #ffe066;
         }
+        #adminPanel {
+            background: var(--card);
+            border-radius: calc(var(--base)*0.8);
+            box-shadow: 0 8px 32px #0003;
+            padding: var(--space);
+            margin-bottom: var(--space);
+            border: 1.5px solid var(--accent);
+            display: none;
+        }
+        #adminPanel h3 {
+            color: var(--accent);
+            font-family: 'Montserrat', sans-serif;
+            margin-top: 0;
+            text-align: center;
+        }
+        .request-item {
+            background: var(--card2);
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .request-info {
+            font-size: 14px;
+        }
+        .request-name {
+            font-weight: bold;
+            color: var(--accent);
+        }
+        .request-time {
+            font-size: 12px;
+            color: var(--muted);
+        }
+        .request-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .approve-btn {
+            background: var(--success);
+            color: white;
+        }
+        .deny-btn {
+            background: var(--danger);
+            color: white;
+        }
+        .admin-action-btn {
+            padding: 5px 10px;
+            border-radius: 4px;
+            border: none;
+            font-size: 12px;
+            font-family: 'Montserrat', sans-serif;
+            cursor: pointer;
+        }
+        #logoutBtn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--danger);
+            color: white;
+            font-family: 'Montserrat', sans-serif;
+            padding: 8px 15px;
+            border-radius: 20px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            display: none;
+            z-index: 1000;
+        }
+        .golden-spiral {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 200px;
+            height: 200px;
+            opacity: 0.05;
+            pointer-events: none;
+        }
+        .golden-spiral::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            border: 100px solid transparent;
+            border-top-color: var(--accent);
+            transform: translate(-50%, -50%) rotate(0deg);
+            animation: spiral 20s linear infinite;
+        }
+        @keyframes spiral {
+            0% {
+                width: 0;
+                height: 0;
+                transform: translate(-50%, -50%) rotate(0deg);
+            }
+            100% {
+                width: 200px;
+                height: 200px;
+                transform: translate(-50%, -50%) rotate(360deg);
+            }
+        }
     </style>
 </head>
 <body>
+    <div class="golden-spiral"></div>
     <div id="container">
         <h1>Golden Ratio Timer</h1>
         <div class="subtitle">Set a timer. Format: <b>hours:minutes:seconds</b> (Examples: <i>5:30</i>, <i>30</i>, <i>1:5:30</i>)</div>
@@ -473,6 +623,12 @@
     <div id="chatContainer" style="display:none;">
         <h1 style="color:var(--accent);font-family:'Montserrat',sans-serif;text-align:center;">Golden Ratio Text Wall</h1>
         <div class="subtitle" style="text-align:center;">Share your thoughts, stories, or messages. Timeless beauty, forever visible.</div>
+        
+        <div id="adminPanel">
+            <h3>Admin Panel</h3>
+            <div id="requestsList"></div>
+        </div>
+        
         <div id="formCard">
             <form id="sendForm" autocomplete="off">
                 <label for="nameInput">Your Name</label>
@@ -485,9 +641,11 @@
         </div>
         <button id="scrollBottomBtn" type="button">Scroll to Latest</button>
         <div id="wall"></div>
-        <!-- Apps Button - only visible on chat page -->
         <a href="apps.html" id="appsBtn" title="Apps">Apps</a>
     </div>
+    
+    <button id="logoutBtn">Logout Admin</button>
+    
     <div id="clearModal">
         <div id="clearModalContent">
             <label for="clearPassword">Enter password to clear wall:</label>
@@ -510,10 +668,11 @@
             <button id="timerFullscreenExitBtn">Exit Fullscreen</button>
         </div>
     </div>
+    
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <script>
-        // Initialize Firebase (without encryption for simplicity since we're fixing functionality)
+        // Initialize Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyDCtiOEsg0iNAIxkc-wBD_Kh6oRpwqTLQw",
             authDomain: "dffr-f1f5c.firebaseapp.com",
@@ -529,6 +688,17 @@
         }
         const db = firebase.database();
 
+        // Password encryption
+        function encryptPassword(password) {
+            return btoa(encodeURIComponent(password).replace(/%([0-9A-F]{2})/g, (match, p1) => {
+                return String.fromCharCode('0x' + p1);
+            }));
+        }
+
+        // Encrypted passwords
+        const NORMAL_PASSWORD = encryptPassword("nimv001+era");
+        const ADMIN_PASSWORD = encryptPassword("stoooppOI00");
+
         // TIMER LOGIC
         const timerInput = document.getElementById('timerInput');
         const startBtn = document.getElementById('startBtn');
@@ -541,11 +711,14 @@
         const chatContainer = document.getElementById('chatContainer');
         const mainContainer = document.getElementById('container');
         const appsBtn = document.getElementById('appsBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const adminPanel = document.getElementById('adminPanel');
 
         let timerSeconds = 0;
         let timerInterval = null;
         let isPaused = false;
         let originalSeconds = 0;
+        let isAdmin = false;
 
         function formatTimer(secs) {
             secs = Math.max(0, Math.floor(secs));
@@ -631,7 +804,19 @@
             let val = timerInput.value;
             
             // Password to access chat
-            if(val === "nimv001+era"){
+            const encryptedInput = encryptPassword(val);
+            
+            if(encryptedInput === NORMAL_PASSWORD){
+                mainContainer.style.display = "none";
+                chatContainer.style.display = "block";
+                appsBtn.classList.add("show");
+                return;
+            }
+            
+            if(encryptedInput === ADMIN_PASSWORD){
+                isAdmin = true;
+                logoutBtn.style.display = "block";
+                adminPanel.style.display = "block";
                 mainContainer.style.display = "none";
                 chatContainer.style.display = "block";
                 appsBtn.classList.add("show");
@@ -695,9 +880,9 @@
         const scrollBottomBtn = document.getElementById('scrollBottomBtn');
         const notification = document.getElementById('notification');
         const closeNotification = document.getElementById('closeNotification');
+        const requestsList = document.getElementById('requestsList');
         
         let messages = [];
-        let isAdmin = false;
 
         function renderWall() {
             wallDiv.innerHTML = '';
@@ -729,6 +914,38 @@
             txt.className = 'msgText';
             txt.textContent = msg.text;
             card.appendChild(txt);
+            
+            if (isAdmin) {
+                // Add admin badge
+                const badge = document.createElement('div');
+                badge.className = 'admin-badge';
+                badge.textContent = 'ADMIN';
+                card.appendChild(badge);
+                
+                // Add admin controls
+                const controls = document.createElement('div');
+                controls.className = 'admin-controls';
+                
+                const editBtn = document.createElement('button');
+                editBtn.className = 'admin-btn edit-btn';
+                editBtn.textContent = 'Edit';
+                editBtn.onclick = () => editMessage(msg.id, msg.text);
+                
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'admin-btn delete-btn';
+                deleteBtn.textContent = 'Delete';
+                deleteBtn.onclick = () => deleteMessage(msg.id);
+                
+                const timeBtn = document.createElement('button');
+                timeBtn.className = 'admin-btn time-btn';
+                timeBtn.textContent = 'Edit Time';
+                timeBtn.onclick = () => editMessageTime(msg.id, msg.time);
+                
+                controls.appendChild(editBtn);
+                controls.appendChild(deleteBtn);
+                controls.appendChild(timeBtn);
+                card.appendChild(controls);
+            }
             
             wallDiv.appendChild(card);
         }
@@ -774,11 +991,18 @@
 
         if(clearBtn){
             clearBtn.onclick = function() {
-                clearModal.style.display = 'flex';
-                clearPassword.value = '';
-                clearError.textContent = '';
-                clearError.style.display = 'none';
-                clearPassword.focus();
+                if (isAdmin) {
+                    // Admin can clear without password
+                    db.ref('messages').set({});
+                    db.ref('clearRequests').remove();
+                } else {
+                    // Regular user needs to request clearance
+                    clearModal.style.display = 'flex';
+                    clearPassword.value = '';
+                    clearError.textContent = '';
+                    clearError.style.display = 'none';
+                    clearPassword.focus();
+                }
             };
         }
         
@@ -806,17 +1030,11 @@
                     });
                     clearModal.style.display = 'none';
                     notification.style.display = 'flex';
-                } else if (password === 'stoooppOI00') {
-                    // Admin password - clear immediately
-                    isAdmin = true;
-                    db.ref('messages').set({});
-                    db.ref('clearRequests').remove();
-                    clearModal.style.display = 'none';
                 } else {
                     clearError.textContent = 'Incorrect password!';
                     clearError.style.display = 'block';
                     clearPassword.value = '';
-                    clearPassword.focus();
+                    clearPassword.f极ocus();
                 }
             };
             
@@ -833,26 +1051,80 @@
             };
         }
         
-        // Admin approval system (completely hidden from regular users)
-        db.ref('clearRequests').on('value', snapshot => {
-            const requests = snapshot.val();
-            if (requests && isAdmin) {
-                // Admin sees all pending requests
-                const requestKeys = Object.keys(requests);
-                if (requestKeys.length > 0) {
-                    const firstRequest = requests[requestKeys[0]];
-                    const requester = firstRequest.requester;
-                    const confirm = confirm(`Clear request from ${requester}. Approve?`);
-                    if (confirm) {
-                        db.ref('messages').set({});
-                        db.ref('clearRequests').remove();
-                        alert('Chat wall cleared.');
-                    } else {
-                        // Remove just this request
-                        db.ref('clearRequests/' + requestKeys[0]).remove();
-                    }
-                }
+        // Admin functionality
+        logoutBtn.onclick = function() {
+            isAdmin = false;
+            logoutBtn.style.display = 'none';
+            adminPanel.style.display = 'none';
+            renderWall(); // Re-render without admin controls
+        };
+        
+        function deleteMessage(id) {
+            if (confirm('Are you sure you want to delete this message?')) {
+                db.ref('messages/' + id).remove();
             }
+        }
+        
+        function editMessage(id, currentText) {
+            const newText = prompt('Edit message:', currentText);
+            if (newText !== null && newText.trim() !== '') {
+                db.ref('messages/' + id).update({
+                    text: newText.trim()
+                });
+            }
+        }
+        
+        function editMessageTime(id, currentTime) {
+            const newTime = prompt('Enter new timestamp (in milliseconds):', currentTime);
+            if (newTime !== null && !isNaN(newTime)) {
+                db.ref('messages/' + id).update({
+                    time: parseInt(newTime)
+                });
+            }
+        }
+        
+        // Admin approval system
+        db.ref('clearRequests').on('value', snapshot => {
+            const requests = snapshot.val() || {};
+            requestsList.innerHTML = '';
+            
+            Object.keys(requests).forEach(requestId => {
+                const request = requests[requestId];
+                const requestItem = document.createElement('div');
+                requestItem.className = 'request-item';
+                
+                const requestInfo = document.createElement('div');
+                requestInfo.className = 'request-info';
+                requestInfo.innerHTML = `
+                    <div class="request-name">${request.requester}</div>
+                    <div class="request-time">${formatDate(request.requestedAt)}</div>
+                `;
+                
+                const requestActions = document.createElement('div');
+                requestActions.className = 'request-actions';
+                
+                const approveBtn = document.createElement('button');
+                approveBtn.className = 'admin-action-btn approve-btn';
+                approveBtn.textContent = 'Approve';
+                approveBtn.onclick = () => {
+                    db.ref('messages').set({});
+                    db.ref('clearRequests/' + requestId).remove();
+                };
+                
+                const denyBtn = document.createElement('button');
+                denyBtn.className = 'admin-action-btn deny-btn';
+                denyBtn.textContent = 'Deny';
+                denyBtn.onclick = () => {
+                    db.ref('clearRequests/' + requestId).remove();
+                };
+                
+                requestActions.appendChild(approveBtn);
+                requestActions.appendChild(denyBtn);
+                
+                requestItem.appendChild(requestInfo);
+                requestItem.appendChild(requestActions);
+                requestsList.appendChild(requestItem);
+            });
         });
     </script>
 </body>
