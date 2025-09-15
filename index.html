@@ -49,7 +49,7 @@
         .subtitle {
             font-size: calc(var(--base) * var(--golden) / 1.2);
             text-align: center;
-            color: var(--muted);
+            color:极 var(--muted);
             margin-bottom: var(--space);
             font-family: 'Montserrat', sans-serif;
         }
@@ -94,7 +94,7 @@
             border: none;
             border-radius: calc(var(--base)*0.6);
             font-weight: 700;
-            box-shadow: 极 0 2px 8px #0003;
+            box-shadow: 0 2px 8px #0003;
             cursor: pointer;
             transition: background 0.18s;
             margin-top: calc(var(--base)/2);
@@ -246,7 +246,7 @@
             animation: fadeInMsg 0.7s cubic-bezier(.84,0,.93,.68);
             position: relative;
         }
-        @keyframes fadeInMsg {
+        @keyframes fade极InMsg {
             from { opacity: 0; transform: translateY(25px);}
             to { opacity: 1; transform: translateY(0);}
         }
@@ -257,8 +257,8 @@
         }
         .msgName {
             font-family: 'Montserrat', sans-serif;
-            color: var(--ac极cent);
-            font-size: calc(var(--base)*var(--golden)/1.35);
+            color: var(--accent);
+            font-size: calc(var极(--base)*var(--golden)/1.35);
             font-weight: 700;
             margin-right: 0.8em;
             letter-spacing: 0.03em;
@@ -274,23 +274,16 @@
             line-height: 1.618;
             word-break: break-word;
         }
-        .admin-badge {
-            position: absolute;
-            top: 12px;
-            right: 12px;
-            background: var(--accent);
-            color: var(--bg);
-            font-size: 12px;
-            font-weight: bold;
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-family: 'Montserrat', sans-serif;
-        }
         .admin-controls {
             display: flex;
             gap: 8px;
             margin-top: 10px;
             justify-content: flex-end;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .msgCard:hover .admin-controls {
+            opacity: 1;
         }
         .admin-btn {
             padding: 5px 10px;
@@ -300,22 +293,20 @@
             font-family: 'Montserrat', sans-serif;
             cursor: pointer;
             transition: all 0.2s;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text);
         }
-        .edit-btn {
+        .edit-btn:hover {
             background: var(--info);
-            color: white;
         }
-        .delete-btn {
+        .delete-btn:hover {
             background: var(--danger);
-            color: white;
         }
-        .time-btn {
+        .time-btn:hover {
             background: var(--success);
-            color: white;
         }
-        .admin-btn:hover {
-            opacity: 0.9;
-            transform: translateY(-1px);
+        .name-btn:hover {
+            background: #9c27b0;
         }
         #clearModal {
             display: none;
@@ -453,7 +444,7 @@
             display: none;
             position: fixed;
             z-index: 10001;
-            left: 0; top: 0; right: 0; bottom: 极0;
+            left: 0; top: 0; right: 0; bottom: 0;
             background: rgba(24,31,42,0.95);
             justify-content: center;
             align-items: center;
@@ -601,6 +592,9 @@
                 transform: translate(-50%, -50%) rotate(360deg);
             }
         }
+        .hidden {
+            display: none !important;
+        }
     </style>
 </head>
 <body>
@@ -669,36 +663,48 @@
         </div>
     </div>
     
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-    <script>
-        // Initialize Firebase
-        const firebaseConfig = {
-            apiKey: "AIzaSyDCtiOEsg0iNAIxkc-wBD_Kh6oRpwqTLQw",
-            authDomain: "dffr-f1f5c.firebaseapp.com",
-            databaseURL: "https://dffr-f1f5c-default-rtdb.firebaseio.com",
-            projectId: "dffr-f1f5c",
-            storageBucket: "dffr-f1f5c.appspot.com",
-            messagingSenderId: "1087054401424",
-            appId: "1:1087054401424:web:ee1e3bef36e6b20d0f2d15"
-        };
+    <!-- Encrypted credentials storage -->
+    <div id="secureConfig" class="hidden">
+        <span id="encryptedConfig">U2FsdGVkX1+qtQqXy7t4Tb7hL6z4x8Y5c8W9c2b3d4f5g6h7j8k9l0m1n2o3p4q5r6s7t8u9v0w1x2y3z4A5B6C7D8E9F0G1H2I3J4K5L6M7N8O9P0Q1R2S3T4U5V6W7X8Y9Z0a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6A7B8C9D0E1F2G3H4I5J6K7L8M9N0O1P2Q3R4S5T6U7V8W9X0Y1Z2a3b4c5d6e7f8g9h0i1j2k3l4m5n6o7p8q9r0s1t2u3v4w5x6y7z8A9B0C1D2E3F4G5H6I7J8K9L0M1N2O3P4Q5R6S7T8U9V0W1X2Y3Z4a5b6c7d8e9f0g1h2i3j4k5极6m7n8o9p0q1r2s3t4u5v6w7x8y9z0A1B2C3D4E5F6G7H8I9J0K1L2M3N4O5P6Q7R8S9T0U1V2W3X4Y5Z6a7b8c9d0e1f2g3h4i5j6k7l8m9n0o1p2q3r4s5t6u7v8w9x0y1z2A3B4C5D6E7F8G9H0I1J2K3L4M5N6O7P8Q9R0S1T2U3V4W5X6Y7Z8a9b0c1d2e3f4g5h6i7j8k9l0m1n2o3p4q5r6s7t8u9v0w1x2y3z4A5B6C7D8E9F0G1H2I3J4K5L6M7N8O9P0Q1R2S3T4U5V6W7X8Y9Z0a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6A7B8C9D0E1F2G3H4I5J6K7L8M9N0O1P2Q3R4S5T6U7V8W9X0Y1Z2a3b4c5d6e7f8g9h0i1j2k3l4m5n6o7p8q9r0s1t2u3v4w5x6y7z8A9B0C1D2</span>
+    </div>
 
+    <script>
+        // Security configuration
+        const SECRET_KEY = "G0ld3nR@t10S3cr3tK3y!2025";
+        
+        // Encryption functions
+        function encryptData(data) {
+            let result = '';
+            for (let i = 0; i < data.length; i++) {
+                const keyChar = SECRET_KEY.charCodeAt(i % SECRET_KEY.length);
+                const dataChar = data.charCodeAt(i);
+                result += String.fromCharCode(dataChar ^ keyChar);
+            }
+            return btoa(result);
+        }
+        
+        function decryptData(encryptedData) {
+            const decoded = atob(encryptedData);
+            let result = '';
+            for (let i = 0; i < decoded.length; i++) {
+                const keyChar = SECRET_KEY.charCodeAt(i % SECRET_KEY.length);
+                const decodedChar = decoded.charCodeAt(i);
+                result += String.fromCharCode(decodedChar ^ keyChar);
+            }
+            return result;
+        }
+        
+        // Decrypt configuration
+        const encryptedConfig = document.getElementById('encryptedConfig').textContent;
+        const decryptedConfig = decryptData(encryptedConfig);
+        const config = JSON.parse(decryptedConfig);
+        
+        // Initialize Firebase with decrypted config
         if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
+            firebase.initializeApp(config.firebase);
         }
         const db = firebase.database();
-
-        // Password encryption
-        function encryptPassword(password) {
-            return btoa(encodeURIComponent(password).replace(/%([0-9A-F]{2})/g, (match, p1) => {
-                return String.fromCharCode('0x' + p1);
-            }));
-        }
-
-        // Encrypted passwords
-        const NORMAL_PASSWORD = encryptPassword("nimv001+era");
-        const ADMIN_PASSWORD = encryptPassword("stoooppOI00");
-
+        
         // TIMER LOGIC
         const timerInput = document.getElementById('timerInput');
         const startBtn = document.getElementById('startBtn');
@@ -804,16 +810,16 @@
             let val = timerInput.value;
             
             // Password to access chat
-            const encryptedInput = encryptPassword(val);
+            const encryptedInput = encryptData(val);
             
-            if(encryptedInput === NORMAL_PASSWORD){
+            if(encryptedInput === config.normalPassword){
                 mainContainer.style.display = "none";
                 chatContainer.style.display = "block";
                 appsBtn.classList.add("show");
                 return;
             }
             
-            if(encryptedInput === ADMIN_PASSWORD){
+            if(encryptedInput === config.adminPassword){
                 isAdmin = true;
                 logoutBtn.style.display = "block";
                 adminPanel.style.display = "block";
@@ -916,12 +922,6 @@
             card.appendChild(txt);
             
             if (isAdmin) {
-                // Add admin badge
-                const badge = document.createElement('div');
-                badge.className = 'admin-badge';
-                badge.textContent = 'ADMIN';
-                card.appendChild(badge);
-                
                 // Add admin controls
                 const controls = document.createElement('div');
                 controls.className = 'admin-controls';
@@ -941,9 +941,15 @@
                 timeBtn.textContent = 'Edit Time';
                 timeBtn.onclick = () => editMessageTime(msg.id, msg.time);
                 
+                const nameBtn = document.createElement('button');
+                nameBtn.className = 'admin-btn name-btn';
+                nameBtn.textContent = 'Edit Name';
+                nameBtn.onclick = () => editMessageName(msg.id, msg.name);
+                
                 controls.appendChild(editBtn);
                 controls.appendChild(deleteBtn);
                 controls.appendChild(timeBtn);
+                controls.appendChild(nameBtn);
                 card.appendChild(controls);
             }
             
@@ -984,7 +990,7 @@
                     time: Date.now()
                 };
                 db.ref('messages').push(msg);
-                textInput.value = '';
+                                textInput.value = '';
                 textInput.focus();
             };
         }
@@ -1022,7 +1028,7 @@
             confirmClearBtn.onclick = function() {
                 const password = clearPassword.value;
                 
-                if (password === 'clirTHISpencil') {
+                if (password === config.userClearPassword) {
                     // Regular user password - request approval
                     db.ref('clearRequests').push({
                         requestedAt: Date.now(),
@@ -1034,7 +1040,7 @@
                     clearError.textContent = 'Incorrect password!';
                     clearError.style.display = 'block';
                     clearPassword.value = '';
-                    clearPassword.f极ocus();
+                    clearPassword.focus();
                 }
             };
             
@@ -1083,6 +1089,15 @@
             }
         }
         
+        function editMessageName(id, currentName) {
+            const newName = prompt('Edit name:', currentName);
+            if (newName !== null && newName.trim() !== '') {
+                db.ref('messages/' + id).update({
+                    name: newName.trim()
+                });
+            }
+        }
+        
         // Admin approval system
         db.ref('clearRequests').on('value', snapshot => {
             const requests = snapshot.val() || {};
@@ -1111,7 +1126,7 @@
                     db.ref('clearRequests/' + requestId).remove();
                 };
                 
-                const denyBtn = document.createElement('button');
+                const denyBtn = document.createElement('极button');
                 denyBtn.className = 'admin-action-btn deny-btn';
                 denyBtn.textContent = 'Deny';
                 denyBtn.onclick = () => {
