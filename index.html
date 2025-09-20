@@ -5,8 +5,6 @@
     <title>Golden Ratio Timer & Chat Wall</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://fonts.googleapis.com/css?family=Montserrat:700,400|Lora:400,700&display=swap" rel="stylesheet">
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="极https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <style>
         :root {
             --golden: 1.618;
@@ -21,9 +19,9 @@
             --input: #1a2232;
             --border: #ffd70055;
             --space: calc(var(--base) * var(--golden));
-            --success: #4caf50;
-            --danger: #e53935;
-            --info: #2196f3;
+            --success: #4CAF50;
+            --warning: #FFC107;
+            --danger: #F44336;
         }
         body {
             margin: 0;
@@ -72,7 +70,7 @@
             padding: calc(var(--base)/1.5);
             margin-bottom: calc(var(--base)/1.2);
             border: none;
-            border-radius: calc(var(--base)*0.极5);
+            border-radius: calc(var(--base)*0.5);
             background: var(--input);
             color: var(--text);
             font-size: calc(var(--base) * var(--golden) / 1.2);
@@ -276,39 +274,22 @@
             line-height: 1.618;
             word-break: break-word;
         }
-        .admin-controls {
-            display: flex;
-            gap: 8px;
-            margin-top: 10px;
-            justify-content: flex-end;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        .msgCard:hover .admin-controls {
-            opacity: 1;
-        }
-        .admin-btn {
-            padding: 5px 10px;
-            border-radius: 4px;
-            border: none;
-            font-size: 12px;
-            font-family: 'Montserrat', sans-serif;
-            cursor: pointer;
-            transition: all 0.2s;
+        .edit-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
             background: rgba(255, 255, 255, 0.1);
-            color: var(--text);
+            color: var(--accent);
+            border: none;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 12px;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s;
         }
-        .edit-btn:hover {
-            background: var(--info);
-        }
-        .delete-btn:hover {
-            background: var(--danger);
-        }
-        .time-btn:hover {
-            background: var(--success);
-        }
-        .name-btn:hover {
-            background: #9c27b0;
+        .msgCard:hover .edit-btn {
+            opacity: 1;
         }
         #clearModal {
             display: none;
@@ -339,7 +320,7 @@
         #clearModalContent input {
             background: var(--input);
             color: var(--text);
-            border: none;
+            border: nothing;
             border-radius: calc(var(--base)*0.5);
             font-size: calc(var(--base)*var(--golden)/1.4);
             padding: calc(var(--base)/1.5);
@@ -418,6 +399,7 @@
         #timerFullscreenExitBtn:hover {
             background: #b71c1c;
         }
+        /* Apps button only for chat page */
         #appsBtn {
             position: fixed;
             left: 25px;
@@ -442,16 +424,68 @@
             background: #ffe066;
             color: #000;
         }
-        #notification {
+        /* Admin panel */
+        #adminPanel {
+            background: var(--card);
+            border-radius: calc(var(--base)*0.8);
+            padding: var(--space);
+            margin-bottom: var(--space);
+            border: 1.5px solid var(--border);
+            display: none;
+        }
+        #adminPanel h2 {
+            color: var(--accent);
+            font-family: 'Montserrat', sans-serif;
+            margin-top: 0;
+            margin-bottom: 0.8em;
+        }
+        #adminRequests {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-bottom: 1em;
+        }
+        .request-item {
+            background: var(--card2);
+            padding: 0.8em;
+            margin-bottom: 0.8em;
+            border-radius: 0.5em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .request-info {
+            flex: 1;
+        }
+        .request-actions {
+            display: flex;
+            gap: 0.5em;
+        }
+        .request-btn {
+            padding: 0.4em 0.8em;
+            border: none;
+            border-radius: 0.4em;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .approve-btn {
+            background: var(--success);
+            color: white;
+        }
+        .deny-btn {
+            background: var(--danger);
+            color: white;
+        }
+        /* Edit modal */
+        #editModal {
             display: none;
             position: fixed;
             z-index: 10001;
             left: 0; top: 0; right: 0; bottom: 0;
-            background: rgba(24,31,42,0.95);
+            background: rgba(24,31,42,0.92);
             justify-content: center;
             align-items: center;
         }
-        #notificationContent {
+        #editModalContent {
             background: var(--card);
             border-radius: calc(var(--base)*0.8);
             box-shadow: 0 8px 32px #0006;
@@ -462,150 +496,47 @@
             flex-direction: column;
             min-width: 300px;
             max-width: 90%;
-            text-align: center;
         }
-        #notificationContent h2 {
+        #editModalContent h2 {
             color: var(--accent);
-            font-family: 'Montserrat', sans-serif;
             margin-top: 0;
         }
-        #notificationContent p {
-            font-size: calc(var(--base)*1.1);
-            line-height: 1.6;
-        }
-        #notificationContent button {
-            background: var(--accent);
-            color: var(--bg);
-            font-family: 'Montserrat', sans-serif;
-            font-size: calc(var(--base)*var(--golden)/1.2);
-            padding: calc(var(--base)/1.1) 0;
-            border: none;
-            border-radius: calc(var(--base)*0.6);
-            font-weight: 700;
-            box-shadow: 0 2px 8px #0003;
-            cursor: pointer;
-            transition: background 0.18s;
-            margin-top: calc(var(--base)/2);
-        }
-        #notificationContent button:hover {
-            background: #ffe066;
-        }
-        #adminPanel {
-            background: var(--card);
-            border-radius: calc(var(--base)*0.8);
-            box-shadow: 0 8px 32px #0003;
-            padding: var(--space);
-            margin-bottom: var(--space);
-            border: 1.5px solid var(--accent);
-            display: none;
-        }
-        #adminPanel h3 {
-            color: var(--accent);
-            font-family: 'Montserrat', sans-serif;
-            margin-top: 0;
-            text-align: center;
-        }
-        .request-item {
-            background: var(--card2);
-            padding: 12px;
-            border-radius: 6px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .request-info {
-            font-size: 14px;
-        }
-        .request-name {
-            font-weight: bold;
-            color: var(--accent);
-        }
-        .request-time {
-            font-size: 12px;
-            color: var(--muted);
-        }
-        .request-actions {
-            display: flex;
-            gap: 8px;
-        }
-        .approve-btn {
-            background: var(--success);
-            color: white;
-        }
-        .deny-btn {
-            background: var(--danger);
-            color: white;
-        }
-        .admin-action-btn {
-            padding: 5px 10px;
-            border-radius: 4px;
-            border: none;
-            font-size: 12px;
-            font-family: 'Montserrat', sans-serif;
-            cursor: pointer;
-        }
-        #logoutBtn {
+        .notification {
             position: fixed;
             top: 20px;
             right: 20px;
-            background: var(--danger);
-            color: white;
+            padding: 15px 20px;
+            border-radius: 5px;
             font-family: 'Montserrat', sans-serif;
-            padding: 8px 15px;
-            border-radius: 20px;
-            border: none;
-            cursor: pointer;
             font-weight: bold;
-            display: none;
-            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 10002;
+            opacity: 0;
+            transform: translateY(-30px);
+            transition: opacity 0.3s, transform 0.3s;
         }
-        .golden-spiral {
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 200px;
-            height: 200px;
-            opacity: 0.05;
-            pointer-events: none;
+        .notification.show {
+            opacity: 1;
+            transform: translateY(0);
         }
-        .golden-spiral::before {
-            content: "";
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-radius: 50%;
-            border: 100px solid transparent;
-            border-top-color: var(--accent);
-            transform: translate(-50%, -50%) rotate(0deg);
-            animation: spiral 20s linear infinite;
+        .notification.success {
+            background-color: var(--success);
+            color: white;
         }
-        @keyframes spiral {
-            0% {
-                width: 0;
-                height: 0;
-                transform: translate(-50%, -50%) rotate(0deg);
-            }
-            100% {
-                width: 200px;
-                height: 200px;
-                transform: translate(-50%, -50%) rotate(360deg);
-            }
-        }
-        .hidden {
-            display: none !important;
+        .notification.error {
+            background-color: var(--danger);
+            color: white;
         }
     </style>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body>
-    <div class="golden-spiral"></div>
     <div id="container">
         <h1>Golden Ratio Timer</h1>
         <div class="subtitle">Set a timer. Format: <b>hours:minutes:seconds</b> (Examples: <i>5:30</i>, <i>30</i>, <i>1:5:30</i>)</div>
         <div id="timerCard">
-            <input type="text" id="timerInput" placeholder="Enter time (e.g. 1:20, 30, 0:2:00)">
+            <input type="text" id="timerInput" placeholder="Enter time or password">
             <button id="startBtn">Start Timer</button>
             <button id="fullscreenBtn">Fullscreen</button>
             <div id="timerError"></div>
@@ -620,12 +551,15 @@
         <h1 style="color:var(--accent);font-family:'Montserrat',sans-serif;text-align:center;">Golden Ratio Text Wall</h1>
         <div class="subtitle" style="text-align:center;">Share your thoughts, stories, or messages. Timeless beauty, forever visible.</div>
         
+        <!-- Admin Panel -->
         <div id="adminPanel">
-            <h3>Admin Panel</h3>
-            <div id="requestsList"></div>
+            <h2>Admin Panel</h2>
+            <div id="adminRequests">
+                <!-- Clearance requests will appear here -->
+            </div>
         </div>
         
-        <div id="form极Card">
+        <div id="formCard">
             <form id="sendForm" autocomplete="off">
                 <label for="nameInput">Your Name</label>
                 <input type="text" id="nameInput" maxlength="22" placeholder="Enter your name..." required>
@@ -637,27 +571,39 @@
         </div>
         <button id="scrollBottomBtn" type="button">Scroll to Latest</button>
         <div id="wall"></div>
+        <!-- Apps Button - only visible on chat page -->
         <a href="apps.html" id="appsBtn" title="Apps">Apps</a>
     </div>
     
-    <button id="logoutBtn">Logout Admin</button>
-    
+    <!-- Clear Modal -->
     <div id="clearModal">
         <div id="clearModalContent">
-            <label for="clearPassword">Enter password to clear wall:</label>
+            <label for="clearPassword">Enter clearance password:</label>
             <input type="password" id="clearPassword" placeholder="Password">
             <div id="clearError"></div>
-            <button id="confirmClearBtn">Clear Now</button>
+            <button id="confirmClearBtn">Request Clearance</button>
             <button id="cancelClearBtn">Cancel</button>
         </div>
     </div>
-    <div id="notification">
-        <div id="notificationContent">
-            <h2>Request Sent</h2>
-            <p>Your request to clear the chat has been sent to Miss Evans for approval.</p>
-            <button id="closeNotification">OK</button>
+    
+    <!-- Edit Modal -->
+    <div id="editModal">
+        <div id="editModalContent">
+            <h2>Edit Message</h2>
+            <label for="editName">Name:</label>
+            <input type="text" id="editName" maxlength="22" required>
+            <label for="editText">Message:</label>
+            <textarea id="editText" maxlength="500" rows="4" required></textarea>
+            <label for="editTime">Timestamp:</label>
+            <input type="text" id="editTime" disabled>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button id="saveEditBtn" style="flex:1;">Save Changes</button>
+                <button id="cancelEditBtn" style="flex:1; background: #666;">Cancel</button>
+            </div>
         </div>
     </div>
+    
+    <!-- Timer Fullscreen -->
     <div id="timerFullscreen">
         <div id="timerFullscreenContent">
             <div id="timerFullscreenDisplay">00:00:00</div>
@@ -665,8 +611,10 @@
         </div>
     </div>
     
+    <!-- Notification -->
+    <div class="notification" id="notification"></div>
+    
     <script>
-        // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyDCtiOEsg0iNAIxkc-wBD_Kh6oRpwqTLQw",
             authDomain: "dffr-f1f5c.firebaseapp.com",
@@ -676,18 +624,16 @@
             messagingSenderId: "1087054401424",
             appId: "1:1087054401424:web:ee1e3bef36e6b20d0f2d15"
         };
-        
-        // Initialize Firebase
         if (!firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
         }
         const db = firebase.database();
-        
+
         // Passwords
-        const NORMAL_PASSWORD = "nimv001+haha";
+        const USER_PASSWORD = "nimv001+haha";
         const ADMIN_PASSWORD = "stoooppOI00";
-        const CLEAR_PASSWORD = "clirTHISpencil";
-        
+        const CLEARANCE_PASSWORD = "clirTHISpencil";
+
         // TIMER LOGIC
         const timerInput = document.getElementById('timerInput');
         const startBtn = document.getElementById('startBtn');
@@ -700,14 +646,13 @@
         const chatContainer = document.getElementById('chatContainer');
         const mainContainer = document.getElementById('container');
         const appsBtn = document.getElementById('appsBtn');
-        const logoutBtn = document.getElementById('logoutBtn');
         const adminPanel = document.getElementById('adminPanel');
 
         let timerSeconds = 0;
         let timerInterval = null;
         let isPaused = false;
         let originalSeconds = 0;
-        let isAdmin = false;
+        let currentUserType = null; // 'user', 'admin'
 
         function formatTimer(secs) {
             secs = Math.max(0, Math.floor(secs));
@@ -716,40 +661,41 @@
             let s = secs%60;
             return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
         }
-        
         function showTimerError(msg) {
             timerError.textContent = msg;
             timerError.style.display = "block";
         }
-        
         function hideTimerError() {
             timerError.textContent = "";
             timerError.style.display = "none";
         }
-        
         function parseTimeInput(val) {
             val = val.trim();
             if (!val) return null;
-            
-            let parts = val.split(':').map(x => parseInt(x.trim()));
-            
-            // Handle different formats
+            let parts = val.split(':').map(x=>x.trim());
             if (parts.length === 1) {
-                return parts[0]; // Seconds only
+                if (/^\d+$/.test(parts[0])) {
+                    return parseInt(parts[0],10);
+                }
+                return null;
             } else if (parts.length === 2) {
-                return parts[0] * 60 + parts[1]; // Minutes:Seconds
+                if (/^\d+$/.test(parts[0]) && /^\d+$/.test(parts[1])) {
+                    return parseInt(parts[0],10)*60 + parseInt(parts[1],10);
+                }
+                return null;
             } else if (parts.length === 3) {
-                return parts[0] * 3600 + parts[1] * 60 + parts[2]; // Hours:Minutes:Seconds
+                if (/^\d+$/.test(parts[0]) && /^\d+$/.test(parts[1]) && /^\d+$/.test(parts[2])) {
+                    return parseInt(parts[0],10)*3600 + parseInt(parts[1],10)*60 + parseInt(parts[2],10);
+                }
+                return null;
+            } else {
+                return null;
             }
-            
-            return null;
         }
-        
         function updateTimerDisplay() {
             timerDisplay.textContent = formatTimer(timerSeconds);
             timerFullscreenDisplay.textContent = formatTimer(timerSeconds);
         }
-        
         function startTimer() {
             if (timerSeconds <= 0) return;
             isPaused = false;
@@ -759,12 +705,10 @@
             startBtn.disabled = true;
             timerInput.disabled = true;
             fullscreenBtn.disabled = false;
-            
-            timerInterval = setInterval(() => {
+            timerInterval = setInterval(()=>{
                 if (!isPaused && timerSeconds > 0) {
                     timerSeconds--;
                     updateTimerDisplay();
-                    
                     if (timerSeconds <= 0) {
                         clearInterval(timerInterval);
                         timerInterval = null;
@@ -772,15 +716,10 @@
                         startBtn.disabled = false;
                         timerInput.disabled = false;
                         fullscreenBtn.disabled = true;
-                        
-                        // Play sound when timer completes
-                        const audio = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==');
-                        audio.play();
                     }
                 }
             }, 1000);
         }
-        
         function resetTimer() {
             clearInterval(timerInterval);
             timerInterval = null;
@@ -794,31 +733,28 @@
             fullscreenBtn.disabled = false;
             isPaused = false;
         }
-        
         startBtn.onclick = function() {
             hideTimerError();
             let val = timerInput.value;
             
-            // Check for normal user password
-            if(val === NORMAL_PASSWORD){
+            // Check for passwords
+            if(val === USER_PASSWORD){
+                currentUserType = 'user';
                 mainContainer.style.display = "none";
                 chatContainer.style.display = "block";
                 appsBtn.classList.add("show");
+                adminPanel.style.display = "none";
                 return;
             }
-            
-            // Check for admin password
             if(val === ADMIN_PASSWORD){
-                isAdmin = true;
-                logoutBtn.style.display = "block";
-                adminPanel.style.display = "block";
+                currentUserType = 'admin';
                 mainContainer.style.display = "none";
                 chatContainer.style.display = "block";
                 appsBtn.classList.add("show");
+                adminPanel.style.display = "block";
                 return;
             }
             
-            // Start timer with regular time input
             let secs = parseTimeInput(val);
             if (secs === null || secs <= 0 || secs > 86400) {
                 showTimerError("Invalid format. Use hours:minutes:seconds (max 24h). Examples: 90, 1:30, 1:5:30, 0:2:10");
@@ -829,47 +765,39 @@
             updateTimerDisplay();
             startTimer();
         };
-        
         pauseBtn.onclick = function() {
             if (!timerInterval) return;
             isPaused = !isPaused;
             pauseBtn.textContent = isPaused ? "Resume" : "Pause";
         };
-        
         resetBtn.onclick = function() {
             resetTimer();
         };
-        
         timerInput.oninput = function() {
             hideTimerError();
         };
-        
         // Fullscreen logic
         const timerFullscreen = document.getElementById('timerFullscreen');
         const timerFullscreenDisplay = document.getElementById('timerFullscreenDisplay');
         const timerFullscreenExitBtn = document.getElementById('timerFullscreenExitBtn');
-        
         fullscreenBtn.onclick = function() {
             timerFullscreen.style.display = "flex";
             timerFullscreenDisplay.textContent = timerDisplay.textContent;
             document.body.style.overflow = "hidden";
         };
-        
         timerFullscreenExitBtn.onclick = function() {
             timerFullscreen.style.display = "none";
             document.body.style.overflow = "";
         };
-        
         window.addEventListener("keydown", function(e){
             if (timerFullscreen.style.display === "flex" && (e.key === "Escape" || e.key === "Esc")) {
                 timerFullscreen.style.display = "none";
                 document.body.style.overflow = "";
             }
         });
-        
         updateTimerDisplay();
 
-        // CHAT LOGIC
+                // CHAT LOGIC
         const wallDiv = document.getElementById('wall');
         const form = document.getElementById('sendForm');
         const nameInput = document.getElementById('nameInput');
@@ -881,11 +809,17 @@
         const cancelClearBtn = document.getElementById('cancelClearBtn');
         const clearError = document.getElementById('clearError');
         const scrollBottomBtn = document.getElementById('scrollBottomBtn');
+        const adminRequests = document.getElementById('adminRequests');
+        const editModal = document.getElementById('editModal');
+        const editName = document.getElementById('editName');
+        const editText = document.getElementById('editText');
+        const editTime = document.getElementById('editTime');
+        const saveEditBtn = document.getElementById('saveEditBtn');
+        const cancelEditBtn = document.getElementById('cancelEditBtn');
         const notification = document.getElementById('notification');
-        const closeNotification = document.getElementById('closeNotification');
-        const requestsList = document.getElementById('requestsList');
         
         let messages = [];
+        let currentEditKey = null;
 
         function renderWall() {
             wallDiv.innerHTML = '';
@@ -896,58 +830,31 @@
         function appendMessageCard(msg) {
             const card = document.createElement('div');
             card.className = 'msgCard';
-            
             const hdr = document.createElement('div');
             hdr.className = 'msgHeader';
-            
             const name = document.createElement('span');
             name.className = 'msgName';
             name.textContent = msg.name;
-            
             hdr.appendChild(name);
-            
             const time = document.createElement('span');
             time.className = 'msgTime';
             time.textContent = formatDate(msg.time);
             hdr.appendChild(time);
-            
             card.appendChild(hdr);
-            
             const txt = document.createElement('div');
             txt.className = 'msgText';
             txt.textContent = msg.text;
             card.appendChild(txt);
             
-            if (isAdmin) {
-                // Add admin controls
-                const controls = document.createElement('div');
-                controls.className = 'admin-controls';
-                
+            // Add edit button for admins
+            if (currentUserType === 'admin') {
                 const editBtn = document.createElement('button');
-                editBtn.className = 'admin-btn edit-btn';
+                editBtn.className = 'edit-btn';
                 editBtn.textContent = 'Edit';
-                editBtn.onclick = () => editMessage(msg.id, msg.text);
-                
-                const deleteBtn = document.createElement('button');
-                deleteBtn.className = 'admin-btn delete-btn';
-                deleteBtn.textContent = 'Delete';
-                deleteBtn.onclick = () => deleteMessage(msg.id);
-                
-                const timeBtn = document.createElement('button');
-                timeBtn.className = 'admin-btn time-btn';
-                timeBtn.textContent = 'Edit Time';
-                timeBtn.onclick = () => editMessageTime(msg.id, msg.time);
-                
-                const nameBtn = document.createElement('button');
-                nameBtn.className = 'admin-btn name-btn';
-                nameBtn.textContent = 'Edit Name';
-                nameBtn.onclick = () => editMessageName(msg.id, msg.name);
-                
-                controls.appendChild(editBtn);
-                controls.appendChild(deleteBtn);
-                controls.appendChild(timeBtn);
-                controls.appendChild(nameBtn);
-                card.appendChild(controls);
+                editBtn.onclick = function() {
+                    openEditModal(msg.key, msg);
+                };
+                card.appendChild(editBtn);
             }
             
             wallDiv.appendChild(card);
@@ -966,40 +873,110 @@
             if(diff < 86400) return `${Math.floor(diff/3600)}h ago`;
             return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
         }
-
+        
+        function openEditModal(key, msg) {
+            currentEditKey = key;
+            editName.value = msg.name;
+            editText.value = msg.text;
+            editTime.value = new Date(msg.time).toLocaleString();
+            editModal.style.display = 'flex';
+        }
+        
+        function showNotification(message, isSuccess = true) {
+            notification.textContent = message;
+            notification.className = `notification ${isSuccess ? 'success' : 'error'}`;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Firebase listeners
         db.ref('messages').on('value', snapshot => {
             const val = snapshot.val() || {};
-            messages = Object.keys(val).map(k => ({id: k, ...val[k]})).sort((a,b) => a.time - b.time);
+            messages = Object.keys(val).map(k => ({ ...val[k], key: k })).sort((a,b) => a.time - b.time);
             renderWall();
         });
-
-        if(form){
+        
+        db.ref('clearanceRequests').on('value', snapshot => {
+            const requests = snapshot.val() || {};
+            adminRequests.innerHTML = '';
+            
+            Object.keys(requests).forEach(key => {
+                const request = requests[key];
+                const requestItem = document.createElement('div');
+                requestItem.className = 'request-item';
+                
+                const requestInfo = document.createElement('div');
+                requestInfo.className = 'request-info';
+                requestInfo.innerHTML = `
+                    <strong>${request.name}</strong> requested clearance<br>
+                    <small>${formatDate(request.time)}</small>
+                `;
+                
+                const requestActions = document.createElement('div');
+                requestActions.className = 'request-actions';
+                
+                const approveBtn = document.createElement('button');
+                approveBtn.className = 'request-btn approve-btn';
+                approveBtn.textContent = 'Approve';
+                approveBtn.onclick = function() {
+                    db.ref(`clearanceRequests/${key}`).remove();
+                    db.ref('messages').set({});
+                    showNotification('Chat cleared successfully', true);
+                };
+                
+                const denyBtn = document.createElement('button');
+                denyBtn.className = 'request-btn deny-btn';
+                denyBtn.textContent = 'Deny';
+                denyBtn.onclick = function() {
+                    db.ref(`clearanceRequests/${key}`).remove();
+                    showNotification('Request denied', false);
+                };
+                
+                requestActions.appendChild(approveBtn);
+                requestActions.appendChild(denyBtn);
+                requestItem.appendChild(requestInfo);
+                requestItem.appendChild(requestActions);
+                adminRequests.appendChild(requestItem);
+            });
+        });
+        
+        // Form submission
+        if(form) {
             form.onsubmit = e => {
                 e.preventDefault();
                 let name = nameInput.value.trim();
                 let text = textInput.value.trim();
+                
                 if(!name || !text) return;
+                
+                // Basic sanitization
                 name = name.replace(/</g,"&lt;").replace(/>/g,"&gt;");
                 text = text.replace(/</g,"&lt;").replace(/>/g,"&gt;");
+                
                 let msg = {
                     name,
                     text,
                     time: Date.now()
                 };
+                
                 db.ref('messages').push(msg);
                 textInput.value = '';
                 textInput.focus();
             };
         }
-
-        if(clearBtn){
+        
+        // Clear button handling
+        if(clearBtn) {
             clearBtn.onclick = function() {
-                if (isAdmin) {
-                    // Admin can clear without password
+                if (currentUserType === 'admin') {
+                    // Admin can clear immediately
                     db.ref('messages').set({});
-                    db.ref('clearRequests').remove();
+                    showNotification('Chat cleared successfully', true);
                 } else {
-                    // Regular user needs to request clearance
+                    // Normal user needs to request clearance
                     clearModal.style.display = 'flex';
                     clearPassword.value = '';
                     clearError.textContent = '';
@@ -1009,30 +986,23 @@
             };
         }
         
-        if(cancelClearBtn){
+        // Clear modal handling
+        if(cancelClearBtn) {
             cancelClearBtn.onclick = function() {
                 clearModal.style.display = 'none';
             };
         }
         
-        if(closeNotification){
-            closeNotification.onclick = function() {
-                notification.style.display = 'none';
-            };
-        }
-        
-        if(confirmClearBtn){
+        if(confirmClearBtn) {
             confirmClearBtn.onclick = function() {
-                const password = clearPassword.value;
-                
-                if (password === CLEAR_PASSWORD) {
-                    // Regular user password - request approval
-                    db.ref('clearRequests').push({
-                        requestedAt: Date.now(),
-                        requester: nameInput.value || 'Anonymous'
+                if (clearPassword.value === CLEARANCE_PASSWORD) {
+                    // Submit clearance request
+                    db.ref('clearanceRequests').push({
+                        name: nameInput.value || 'Anonymous',
+                        time: Date.now()
                     });
                     clearModal.style.display = 'none';
-                    notification.style.display = 'flex';
+                    showNotification('Clearance request sent to admins', true);
                 } else {
                     clearError.textContent = 'Incorrect password!';
                     clearError.style.display = 'block';
@@ -1047,96 +1017,45 @@
                 }
             });
         }
-
+        
+        // Edit modal handling
+        saveEditBtn.onclick = function() {
+            const newName = editName.value.trim();
+            const newText = editText.value.trim();
+            
+            if (!newName || !newText) {
+                showNotification('Name and message cannot be empty', false);
+                return;
+            }
+            
+            db.ref(`messages/${currentEditKey}`).update({
+                name: newName,
+                text: newText
+            });
+            
+            editModal.style.display = 'none';
+            showNotification('Message updated successfully', true);
+        };
+        
+        cancelEditBtn.onclick = function() {
+            editModal.style.display = 'none';
+        };
+        
+        // Scroll to bottom button
         if (scrollBottomBtn && wallDiv) {
             scrollBottomBtn.onclick = function() {
                 wallDiv.scrollTop = wallDiv.scrollHeight;
             };
         }
         
-        // Admin functionality
-        logoutBtn.onclick = function() {
-            isAdmin = false;
-            logoutBtn.style.display = 'none';
-            adminPanel.style.display = 'none';
-            renderWall(); // Re-render without admin controls
-        };
-        
-        function deleteMessage(id) {
-            if (confirm('Are you sure you want to delete this message?')) {
-                db.ref('messages/' + id).remove();
+        // Close modals when clicking outside
+        window.addEventListener('click', function(e) {
+            if (e.target === clearModal) {
+                clearModal.style.display = 'none';
             }
-        }
-        
-        function editMessage(id, currentText) {
-            const newText = prompt('Edit message:', currentText);
-            if (newText !== null && newText.trim() !== '') {
-                db.ref('messages/' + id).update({
-                    text: newText.trim()
-                });
+            if (e.target === editModal) {
+                editModal.style.display = 'none';
             }
-        }
-        
-        function editMessageTime(id, currentTime) {
-            const newTime = prompt('Enter new timestamp (in milliseconds):', currentTime);
-            if (newTime !== null && !isNaN(newTime)) {
-                db.ref('messages/' + id).update({
-                    time: parseInt(newTime)
-                });
-            }
-        }
-        
-        function editMessageName(id, currentName) {
-            const newName = prompt('Edit name:', currentName);
-            if (newName !== null && newName.trim() !== '') {
-                db.ref('messages/' + id).update({
-                    name: newName.trim()
-                });
-            }
-        }
-        
-        // Admin approval system
-        db.ref('clearRequests').on('value', snapshot => {
-            const requests = snapshot.val() || {};
-            requestsList.innerHTML = '';
-            
-            Object.keys(requests).forEach(requestId => {
-                const request = requests[requestId];
-                const requestItem = document.createElement('div');
-                requestItem.className = 'request-item';
-                
-                const requestInfo = document.createElement('div');
-                requestInfo.className = 'request-info';
-                requestInfo.innerHTML = `
-                    <div class="request-name">${request.requester}</div>
-                    <div class="request-time">${formatDate(request.requestedAt)}</div>
-                `;
-                
-                const requestActions = document.createElement('div');
-                requestActions.className = 'request-actions';
-                
-                const approveBtn = document.createElement('button');
-                approveBtn.className = 'admin-action-btn approve-btn';
-                approveBtn.textContent = 'Approve';
-                approveBtn.onclick = () => {
-                    db.ref('messages').set({});
-                    db.ref('clearRequests/' + requestId).remove();
-                };
-                
-                const denyBtn = document.createElement('button');
-                denyBtn.className = 'admin-action-btn deny-btn';
-                denyBtn.textContent = 'Deny';
-                denyBtn.onclick = () => {
-                    db.ref('clearRequests/' + requestId).remove();
-                };
-                
-                requestActions.appendChild(approveBtn);
-                requestActions.appendChild(denyBtn);
-                
-                requestItem.appendChild(requestInfo);
-                requestItem.appendChild(requestActions);
-                requestsList.appendChild(requestItem);
-            });
         });
     </script>
 </body>
