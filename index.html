@@ -97,7 +97,7 @@ h1 {
   border: none;
   border-radius: calc(var(--base)*0.6);
   font-weight: 700;
-  box-shadow: 0 2px 8px #0003;
+  box-shadow: 极狐 2px 8px #0003;
   cursor: pointer;
   transition: background 0.18s;
   margin-top: calc(var(--base)/2);
@@ -142,7 +142,7 @@ h1 {
   border: none;
   border-radius: calc(var(--base)*0.5);
   font-weight: 700;
-  box-shadow: 极狐 0 2px 8px #0002;
+  box-shadow: 0 2px 8px #0002;
   cursor: pointer;
   transition: background 0.16s;
 }
@@ -166,7 +166,7 @@ h1 {
   color: var(--accent);
   font-size: calc(var(--base)*1.02);
 }
-#formCard input, #form极狐 textarea {
+#formCard input, #formCard textarea {
   width: 100%;
   padding: calc(var(--base)/1.5);
   margin-bottom: calc(var(--base)/1.2);
@@ -199,7 +199,7 @@ h1 {
   transition: background 0.18s;
   margin-top: calc(var(--base)/2);
 }
-#formCard button:hover {
+#form极狐 button:hover {
   background: #ffe066;
 }
 #clearBtn {
@@ -711,14 +711,14 @@ h1 {
   <!-- Admin Panel -->
   <div id="adminPanel">
     <h2>Admin Panel</h2>
-
+    
     <div class="admin-tabs">
       <button class="admin-tab active" data-tab="stats">Statistics</button>
       <button class="admin-tab" data-tab="users">User Management</button>
       <button class="admin-tab" data-tab="requests">Clearance Requests</button>
-      <button class="admin-tab" data-tab="scary">Send Scary Message</button>
+      <button class="admin-tab" data极狐="scary">Send Scary Message</button>
     </div>
-
+    
     <div id="statsTab" class="admin-tab-content active">
       <div class="admin-stats-grid">
         <div class="stat-card">
@@ -727,31 +727,31 @@ h1 {
         </div>
         <div class="stat-card">
           <div class="stat-value" id="todayVisits">0</div>
-          <div class="stat-label">Today's Visits</极狐div>
+          <div class="stat-label">Today's Visits</div>
         </div>
         <div class="stat-card">
           <div class="stat-value" id="uniqueUsers">0</div>
           <div class="stat-label">Unique Users</div>
-        </div>
+        </极狐>
         <div class="stat-card">
           <div class="stat-value" id="onlineUsers">0</div>
           <div class="stat-label">Online Now</div>
         </div>
       </div>
     </div>
-
+    
     <div id="usersTab" class="admin-tab-content">
       <div class="user-list" id="userList">
         <!-- User items will be added here -->
       </div>
     </div>
-
+    
     <div id="requestsTab" class="admin-tab-content">
       <div id="adminRequests">
         <!-- Clearance requests will appear here -->
       </div>
     </div>
-
+    
     <div id="scaryTab" class="admin-tab-content">
       <div class="scary-form">
         <label for="scaryTarget">Select User:</label>
@@ -801,7 +801,7 @@ h1 {
     <label for="editText">Message:</label>
     <textarea id="editText" maxlength="500" rows="4" required></textarea>
     <label for="editTime">Timestamp:</label>
-    <input type="text" id="editTime" disabled>
+    <input type="text" id="editTime" required>
     <div style="display: flex; gap: 10px; margin-top: 20px;">
       <button id="saveEditBtn" style="flex:1;">Save Changes</button>
       <button id="cancelEditBtn" style="flex:1; background: #666;">Cancel</button>
@@ -951,7 +951,7 @@ async function getUserIP() {
     userIP = data.ip;
     
     try {
-      const geoResponse = await fetch(`https://ipinfo.io/${userIP}/json?token=5a7a07190720f4);
+      const geoResponse = await fetch(`https://ipinfo.io/${userIP}/json?token=5a7a07190720f4`);
       const geoData = await geoResponse.json();
       userLocation = `${geoData.city || 'Unknown'}, ${geoData.country || 'Unknown'}`;
     } catch (geoError) {
@@ -1070,7 +1070,7 @@ function updateStats() {
     uniqueUsers.textContent = userKeys.length;
     
     // Online users (active in last 5 minutes)
-    const onlineCount = userKeys.filter(key => {
+       const onlineCount = userKeys.filter(key => {
       return users[key].lastActive && (Date.now() - users[key].lastActive) < 300000;
     }).length;
     onlineUsers.textContent = onlineCount;
@@ -1085,27 +1085,32 @@ function renderUserList() {
     const users = snapshot.val() || {};
     userList.innerHTML = '';
     scaryTarget.innerHTML = '<option value="">Select a user</option>';
-    
+
     Object.keys(users).forEach(key => {
       const user = users[key];
-      
+      const lastSeen = user.lastActive ? formatDate(user.lastActive) : 'Never';
+      const status = user.status || 'active';
+      const isOnline = user.lastActive && (Date.now() - user.lastActive) < 300000;
+
       // Add to user list
       const userItem = document.createElement('div');
       userItem.className = 'user-item';
-      
+
       const userInfo = document.createElement('div');
       userInfo.className = 'user-info';
       userInfo.innerHTML = `
-        <strong>${key}</strong><br>
+        <strong>${key}</strong> (${status})<br>
         <small>IP: ${user.ip || 'Unknown'}</small><br>
         <small>Location: ${user.location || 'Unknown'}</small><br>
-        <small>Visits: ${user.visits || 0} (Today: ${user.todayVisits || 0})</small>
+        <small>Visits: ${user.visits || 0} (Today: ${user.todayVisits || 0})</small><br>
+        <small>Last seen: ${lastSeen}</small><br>
+        <small>Status: ${isOnline ? '<span style="color:var(--success);">Online</span>' : 'Offline'}</small>
       `;
-      
+
       const userActions = document.createElement('div');
       userActions.className = 'user-actions';
-      
-      if (user.status === 'banned') {
+
+      if (status === 'banned') {
         const unbanBtn = document.createElement('button');
         unbanBtn.className = 'user-btn unban-btn';
         unbanBtn.textContent = 'Unban';
@@ -1117,7 +1122,7 @@ function renderUserList() {
         banBtn.textContent = 'Ban';
         banBtn.onclick = () => banUser(key);
         userActions.appendChild(banBtn);
-        
+
         const messageBtn = document.createElement('button');
         messageBtn.className = 'user-btn message-btn';
         messageBtn.textContent = 'Scare';
@@ -1127,25 +1132,21 @@ function renderUserList() {
         };
         userActions.appendChild(messageBtn);
       }
-      
+
       userItem.appendChild(userInfo);
       userItem.appendChild(userActions);
       userList.appendChild(userItem);
-      
+
       // Add to scary target dropdown
-      if (user.status !== 'banned') {
+      if (status !== 'banned') {
         const option = document.createElement('option');
         option.value = key;
-        option.textContent = `${key} (${user.location || 'Unknown'})`;
+        option.textContent = `${key} (${user.location || 'Unknown'}) ${isOnline ? '🟢' : '🔴'}`;
         scaryTarget.appendChild(option);
       }
     });
   });
 }
-
-<!-- Complete Golden Ratio Timer with Enhanced Admin Features -->
-<script>
-// ... (previous script content) ...
 
 // Ban user
 function banUser(userId) {
@@ -1179,7 +1180,7 @@ function sendScaryMessage() {
     sentAt: Date.now(),
     sender: userId,
     status: 'pending',
-    duration: 5000 // 5 seconds duration
+    duration: 5000 // 5 seconds
   });
 
   scaryMessageText.value = '';
@@ -1187,11 +1188,12 @@ function sendScaryMessage() {
 }
 
 // Show scary message
-function showScaryMessage(message, duration) {
+function showScaryMessage(message) {
   scaryMessage.textContent = message;
   scaryOverlay.classList.add('active');
 
   // Set timer
+  const duration = 5000; // 5 seconds
   activeScaryMessage = {
     userId: userId,
     message: message,
@@ -1217,23 +1219,12 @@ function checkScaryMessages() {
         deliveredAt: Date.now()
       });
 
-      // Show message if user is active
+      // Show message if user is active and on the site
       if (document.visibilityState === 'visible') {
-        showScaryMessage(messageData.message, messageData.duration);
+        showScaryMessage(messageData.message);
       }
     }
   });
-}
-
-// Show notification
-function showNotification(message, isSuccess = true) {
-  notification.textContent = message;
-  notification.className = `notification ${isSuccess ? 'success' : 'error'}`;
-  notification.classList.add('show');
-
-  setTimeout(() => {
-    notification.classList.remove('show');
-  }, 3000);
 }
 
 // TIMER FUNCTIONS
@@ -1281,7 +1272,7 @@ function parseTimeInput(val) {
 
 function updateTimerDisplay() {
   timerDisplay.textContent = formatTimer(timerSeconds);
-  timerFullscreenDisplay.text极狐Content = formatTimer(timerSeconds);
+  timerFullscreenDisplay.textContent = formatTimer(timerSeconds);
 }
 
 function startTimer() {
@@ -1321,50 +1312,6 @@ function resetTimer() {
   timerInput.disabled = false;
   fullscreenBtn.disabled = false;
   isPaused = false;
-}
-
-// CHAT FUNCTIONS
-function renderWall() {
-  wallDiv.innerHTML = '';
-  messages.forEach(msg => appendMessageCard(msg));
-  scrollWallToBottom();
-}
-
-function appendMessageCard(msg) {
-  const card = document.createElement('div');
-  card.className = 'msgCard';
-  const hdr = document.createElement('div');
-  hdr.className = 'msgHeader';
-  const name = document.createElement('span');
-  name.className = 'msgName';
-  name.textContent = msg.name;
-  hdr.appendChild(name);
-  const time = document.createElement('span');
-  time.className = 'msgTime';
-  time.textContent = formatDate(msg.time);
-  hdr.appendChild(time);
-  card.appendChild(hdr);
-  const txt = document.createElement('div');
-  txt.className = 'msgText';
-  txt.textContent = msg.text;
-  card.appendChild(txt);
-
-  // Add edit button for admins
-  if (currentUserType === 'admin') {
-    const editBtn = document.createElement('button');
-    editBtn.className = 'edit-btn';
-    editBtn.textContent = 'Edit';
-    editBtn.onclick = function() {
-      openEditModal(msg.key, msg);
-    };
-    card.appendChild(editBtn);
-  }
-
-  wallDiv.appendChild(card);
-}
-
-function scrollWallToBottom() {
-  wallDiv.scrollTop = wallDiv.scrollHeight;
 }
 
 // Initialize the app
@@ -1526,15 +1473,17 @@ if(confirmClearBtn) {
 saveEditBtn.addEventListener('click', function() {
   const newName = editName.value.trim();
   const newText = editText.value.trim();
+  const newTime = new Date(editTime.value).getTime();
 
-  if (!newName || !newText) {
-    showNotification('Name and message cannot be empty', false);
+  if (!newName || !newText || isNaN(newTime)) {
+    showNotification('All fields are required', false);
     return;
   }
 
   db.ref(`messages/${currentEditKey}`).update({
     name: newName,
-    text: newText
+    text: newText,
+    time: newTime
   });
 
   editModal.style.display = 'none';
