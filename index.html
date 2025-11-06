@@ -2,687 +2,461 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexus Chat | Hypnotic Messaging</title>
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
+    <title>Golden Ratio Timer & Chat Wall</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:700,400|Lora:400,700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --deep-blue: #0c0f17;
-            --electric-purple: #6d28d9;
-            --vibrant-teal: #06d6a0;
-            --golden-ratio: 1.618;
-            --bubble-radius: calc(1rem / var(--golden-ratio));
-            --spacing-unit: calc(1rem * var(--golden-ratio));
+            --golden: 1.618;
+            --base: 20px;
+            --accent: #ffd700;
+            --bg: #181f2a;
+            --bg-gradient: linear-gradient(135deg, #181f2a 0%, #222b3c 100%);
+            --card: #242f42;
+            --card2: #1a2232;
+            --text: #fafafa;
+            --muted: #b4b4b4;
+            --input: #1a2232;
+            --border: #ffd70055;
+            --space: calc(var(--base) * var(--golden));
         }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-        }
-
         body {
-            background: var(--deep-blue);
-            color: white;
+            margin: 0;
+            background: var(--bg-gradient);
+            min-height: 100vh;
+            color: var(--text);
+            font-family: 'Lora', serif;
+            overflow-x: hidden;
+        }
+        #container, #chatContainer {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: calc(var(--space)*0.6);
+        }
+        #chatContainer { display: none; }
+        h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: calc(var(--base) * var(--golden) * 1.2);
+            text-align: center;
+            margin-top: var(--space);
+            margin-bottom: 0.3em;
+            color: var(--accent);
+            letter-spacing: 0.02em;
+        }
+        .subtitle {
+            font-size: calc(var(--base) * var(--golden) / 1.2);
+            text-align: center;
+            color: var(--muted);
+            margin-bottom: var(--space);
+            font-family: 'Montserrat', sans-serif;
+        }
+        #timerCard {
+            background: var(--card);
+            border-radius: calc(var(--base)*0.8);
+            box-shadow: 0 8px 32px #0003;
+            padding: var(--space);
+            margin-bottom: var(--space);
+            border: 1.5px solid var(--border);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #timerInput {
+            width: 70%;
+            padding: calc(var(--base)/1.5);
+            margin-bottom: calc(var(--base)/1.2);
+            border: none;
+            border-radius: calc(var(--base)*0.5);
+            background: var(--input);
+            color: var(--text);
+            font-size: calc(var(--base) * var(--golden) / 1.2);
+            font-family: 'Lora', serif;
+            box-shadow: 0 2px 8px #0002;
+            outline: none;
+            transition: background 0.14s;
+            text-align: center;
+        }
+        #timerInput:focus {
+            background: #232f4e;
+        }
+        #startBtn, #fullscreenBtn {
+            display: block;
+            width: 70%;
+            background: var(--accent);
+            color: var(--bg);
+            font-family: 'Montserrat', sans-serif;
+            font-size: calc(var(--base)*var(--golden)/1.2);
+            padding: calc(var(--base)/1.1) 0;
+            border: none;
+            border-radius: calc(var(--base)*0.6);
+            font-weight: 700;
+            box-shadow: 0 2px 8px #0003;
+            cursor: pointer;
+            transition: background 0.18s;
+            margin-top: calc(var(--base)/2);
+        }
+        #startBtn:hover, #fullscreenBtn:hover {
+            background: #ffe066;
+        }
+        #timerError {
+            color: #e53935;
+            font-weight: 700;
+            margin-top: 0.5em;
+            display: none;
+            text-align: center;
+        }
+        #timerDisplay {
+            font-family: 'Montserrat', monospace;
+            font-size: calc(var(--base) * var(--golden) * 2.2);
+            color: var(--accent);
+            letter-spacing: 0.12em;
+            margin: calc(var(--base)*1.2) 0;
+            text-align: center;
+            background: var(--card2);
+            border-radius: calc(var(--base)*0.7);
+            box-shadow: 0 2px 16px #0003;
+            padding: calc(var(--base)*1.2);
+            width: 95%;
+            user-select: none;
+        }
+        #timerActions {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1.618em;
+            margin-top: 1em;
+        }
+        #timerActions button {
+            background: var(--card2);
+            color: var(--accent);
+            font-family: 'Montserrat', sans-serif;
+            font-size: calc(var(--base)*var(--golden)/1.4);
+            padding: 0.7em 1.618em;
+            border: none;
+            border-radius: calc(var(--base)*0.5);
+            font-weight: 700;
+            box-shadow: 0 2px 8px #0002;
+            cursor: pointer;
+            transition: background 0.16s;
+        }
+        #timerActions button:hover {
+            background: #ffd70033;
+        }
+        #formCard {
+            background: var(--card);
+            border-radius: calc(var(--base)*0.8);
+            box-shadow: 0 8px 32px #0003;
+            padding: var(--space);
+            margin-bottom: var(--space);
+            border: 1.5px solid var(--border);
+            position: relative;
+        }
+        #formCard label {
+            display: block;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            margin-bottom: 0.2em;
+            color: var(--accent);
+            font-size: calc(var(--base)*1.02);
+        }
+        #formCard input, #formCard textarea {
+            width: 100%;
+            padding: calc(var(--base)/1.5);
+            margin-bottom: calc(var(--base)/1.2);
+            border: none;
+            border-radius: calc(var(--base)*0.5);
+            background: var(--input);
+            color: var(--text);
+            font-size: calc(var(--base) * var(--golden) / 1.4);
+            font-family: 'Lora', serif;
+            box-shadow: 0 2px 8px #0002;
+            outline: none;
+            transition: background 0.14s;
+        }
+        #formCard input:focus, #formCard textarea:focus {
+            background: #232f4e;
+        }
+        #formCard button {
+            display: block;
+            width: 100%;
+            background: var(--accent);
+            color: var(--bg);
+            font-family: 'Montserrat', sans-serif;
+            font-size: calc(var(--base)*var(--golden)/1.2);
+            padding: calc(var(--base)/1.1) 0;
+            border: none;
+            border-radius: calc(var(--base)*0.6);
+            font-weight: 700;
+            box-shadow: 0 2px 8px #0003;
+            cursor: pointer;
+            transition: background 0.18s;
+            margin-top: calc(var(--base)/2);
+        }
+        #formCard button:hover {
+            background: #ffe066;
+        }
+        #clearBtn {
+            background: #e53935;
+            color: #fff;
+            font-size: calc(var(--base)*var(--golden)/1.3);
+            margin-top: calc(var(--base)/2);
+            margin-bottom: 0;
+            border-radius: calc(var(--base)*0.6);
+            box-shadow: 0 2px 10px #0003;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+        }
+        #clearBtn:hover {
+            background: #b71c1c;
+        }
+        #scrollBottomBtn {
+            width: 100%;
+            background: var(--accent);
+            color: var(--bg);
+            font-size: 1.1em;
+            font-family: 'Montserrat',sans-serif;
+            font-weight: 700;
+            border: none;
+            border-radius: 0.6em;
+            box-shadow: 0 2px 8px #0003;
+            margin-bottom: 1em;
+            cursor: pointer;
+        }
+        #wall {
+            min-height: calc(var(--space)*2);
+            max-height: 50vh;
+            overflow-y: auto;
+            padding-top: 0.5em;
+            padding-bottom: 1em;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .msgCard {
+            background: var(--card2);
+            border-radius: calc(var(--base)*0.6);
+            box-shadow: 0 2px 12px #0002;
+            padding: calc(var(--base)*0.9) calc(var(--base)*1.2);
+            margin-bottom: calc(var(--base)*0.9);
+            border-left: 6px solid var(--accent);
+            animation: fadeInMsg 0.7s cubic-bezier(.84,0,.93,.68);
+        }
+        @keyframes fadeInMsg {
+            from { opacity: 0; transform: translateY(25px);}
+            to { opacity: 1; transform: translateY(0);}
+        }
+        .msgHeader {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.7em;
+        }
+        .msgName {
+            font-family: 'Montserrat', sans-serif;
+            color: var(--accent);
+            font-size: calc(var(--base)*var(--golden)/1.35);
+            font-weight: 700;
+            margin-right: 0.8em;
+            letter-spacing: 0.03em;
+        }
+        .msgTime {
+            font-size: calc(var(--base)*0.95);
+            color: var(--muted);
+            font-family: 'Montserrat', sans-serif;
+        }
+        .msgText {
+            font-size: calc(var(--base)*var(--golden)/1.18);
+            color: var(--text);
+            line-height: 1.618;
+            word-break: break-word;
+        }
+        #clearModal {
+            display: none;
+            position: fixed;
+            z-index: 10000;
+            left: 0; top: 0; right: 0; bottom: 0;
+            background: rgba(24,31,42,0.92);
+            justify-content: center;
+            align-items: center;
+        }
+        #clearModalContent {
+            background: var(--card);
+            border-radius: calc(var(--base)*0.8);
+            box-shadow: 0 8px 32px #0006;
+            padding: var(--space);
+            border: 2px solid var(--accent);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            min-width: 260px;
+        }
+        #clearModalContent label {
+            color: var(--accent);
+            font-size: calc(var(--base)*var(--golden)/1.3);
+            font-weight: 700;
+            margin-bottom: 0.5em;
+        }
+        #clearModalContent input {
+            background: var(--input);
+            color: var(--text);
+            border: none;
+            border-radius: calc(var(--base)*0.5);
+            font-size: calc(var(--base)*var(--golden)/1.4);
+            padding: calc(var(--base)/1.5);
+            margin-bottom: 1em;
+            font-family: 'Lora', serif;
+        }
+        #clearModalContent button {
+            background: var(--accent);
+            color: var(--bg);
+            font-family: 'Montserrat', sans-serif;
+            font-size: calc(var(--base)*var(--golden)/1.2);
+            padding: calc(var(--base)/1.1) 0;
+            border: none;
+            border-radius: calc(var(--base)*0.6);
+            font-weight: 700;
+            box-shadow: 0 2px 8px #0003;
+            cursor: pointer;
+            transition: background 0.18s;
+            margin-bottom: 0.5em;
+        }
+        #clearModalContent button:last-child {
+            background: #e53935;
+            color: #fff;
+        }
+        #clearModalContent button:last-child:hover {
+            background: #b71c1c;
+        }
+        #clearError {
+            color: #e53935;
+            font-weight: 700;
+            margin-bottom: 0.5em;
+            display: none;
+        }
+        #timerFullscreen {
+            position: fixed;
+            z-index: 99999;
+            top: 0; left: 0; right: 0; bottom: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: #181f2a;
+        }
+        #timerFullscreenContent {
+            width: 100vw;
             height: 100vh;
             display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            transition: all 0.5s cubic-bezier(0.65, 0.05, 0.36, 1);
-        }
-
-        /* Hypnotic gradient background */
-        .gradient-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, 
-                rgba(12, 15, 23, 0.9) 0%, 
-                rgba(109, 40, 217, 0.15) 50%, 
-                rgba(6, 214, 160, 0.05) 100%);
-            z-index: -2;
-            animation: gradientPulse 15s ease infinite;
-            background-size: 200% 200%;
-        }
-
-        /* Particle background */
-        #particles-js {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            opacity: 0.2;
-        }
-
-        /* Header */
-        .header {
-            padding: calc(var(--spacing-unit) / 1.5);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(12, 15, 23, 0.85);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            border-bottom: 1px solid rgba(109, 40, 217, 0.3);
-            box-shadow: 0 4px 40px rgba(0, 0, 0, 0.2);
-            position: relative;
-            z-index: 10;
-        }
-
-        .logo {
-            font-size: calc(1.2rem * var(--golden-ratio));
-            font-weight: 800;
-            background: linear-gradient(90deg, var(--electric-purple), var(--vibrant-teal));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            letter-spacing: 0.5rem;
-            text-shadow: 0 0 10px rgba(109, 40, 217, 0.5);
-            transition: all 0.5s ease;
-        }
-
-        .logo:hover {
-            text-shadow: 0 0 20px rgba(6, 214, 160, 0.7);
-        }
-
-        .controls {
-            display: flex;
-            gap: calc(var(--spacing-unit) / 2);
-            align-items: center;
-        }
-
-        .btn {
-            padding: calc(0.4rem * var(--golden-ratio)) calc(0.8rem * var(--golden-ratio));
-            border: none;
-            border-radius: var(--bubble-radius);
-            background: rgba(109, 40, 217, 0.25);
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            position: relative;
-            overflow: hidden;
-            font-weight: 600;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .btn::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, rgba(109, 40, 217, 0.5), rgba(6, 214, 160, 0.5));
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px) scale(1.05);
-            box-shadow: 0 10px 25px rgba(6, 214, 160, 0.3);
-        }
-
-        .btn:hover::after {
-            opacity: 1;
-        }
-
-        .btn:active {
-            transform: translateY(0) scale(0.98);
-        }
-
-        /* Chat container */
-        .chat-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            padding: var(--spacing-unit);
-            overflow: hidden;
-            position: relative;
-        }
-
-        /* Messages area */
-        .messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: calc(var(--spacing-unit) / 2);
-            display: flex;
-            flex-direction: column;
-            gap: calc(var(--spacing-unit) / 2);
-            scroll-behavior: smooth;
-        }
-
-        /* Custom scrollbar */
-        .messages::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        .messages::-webkit-scrollbar-track {
-            background: rgba(12, 15, 23, 0.5);
-            border-radius: 10px;
-        }
-
-        .messages::-webkit-scrollbar-thumb {
-            background: linear-gradient(var(--electric-purple), var(--vibrant-teal));
-            border-radius: 10px;
-        }
-
-        .messages::-webkit-scrollbar-thumb:hover {
-            background: var(--vibrant-teal);
-        }
-
-        /* Message bubbles */
-        .message {
-            max-width: 70%;
-            padding: calc(var(--spacing-unit) / 1.5) var(--spacing-unit);
-            border-radius: var(--bubble-radius);
-            animation: fadeIn 0.4s cubic-bezier(0.39, 0.575, 0.565, 1) both;
-            position: relative;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-            transition: all 0.3s ease;
-        }
-
-        .message:hover {
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 12px 30px rgba(6, 214, 160, 0.25);
-        }
-
-        .user-message {
-            align-self: flex-end;
-            background: rgba(109, 40, 217, 0.2);
-            border-left: 3px solid var(--electric-purple);
-        }
-
-        .other-message {
-            align-self: flex-start;
-            background: rgba(6, 214, 160, 0.2);
-            border-left: 3px solid var(--vibrant-teal);
-        }
-
-        .message-sender {
-            font-weight: 700;
-            margin-bottom: calc(var(--spacing-unit) / 4);
-            font-size: 0.9rem;
-            color: var(--vibrant-teal);
-            text-shadow: 0 0 5px rgba(6, 214, 160, 0.3);
-        }
-
-        .user-message .message-sender {
-            color: var(--electric-purple);
-            text-shadow: 0 0 5px rgba(109, 40, 217, 0.3);
-        }
-
-        .message-text {
-            line-height: 1.6;
-            font-size: 1.05rem;
-        }
-
-        .message-time {
-            font-size: 0.7rem;
-            opacity: 0.7;
-            text-align: right;
-            margin-top: calc(var(--spacing-unit) / 4);
-            font-weight: 300;
-        }
-
-        /* Input area */
-        .input-area {
-            display: flex;
-            gap: calc(var(--spacing-unit) / 2);
-            padding: var(--spacing-unit);
-            background: rgba(12, 15, 23, 0.85);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            border-top: 1px solid rgba(109, 40, 217, 0.3);
-            box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.1);
-        }
-
-        .input-field {
-            border: none;
-            border-radius: var(--bubble-radius);
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
-            padding: calc(var(--spacing-unit) / 1.5);
-        }
-
-        .input-field:focus {
-            outline: none;
-            background: rgba(255, 255, 255, 0.15);
-            box-shadow: 0 0 0 2px var(--vibrant-teal);
-        }
-
-        #nameInput {
-            flex: 0.3; /* 30% width */
-            border-right: 1px solid rgba(109, 40, 217, 0.3);
-        }
-
-        #messageInput {
-            flex: 0.7; /* 70% width */
-        }
-
-        .send-btn {
-            padding: 0 calc(var(--spacing-unit) * 1.2);
-            border: none;
-            border-radius: var(--bubble-radius);
-            background: linear-gradient(135deg, var(--electric-purple), var(--vibrant-teal));
-            color: white;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 15px rgba(109, 40, 217, 0.3);
-            position: relative;
-            overflow: hidden;
         }
-
-        .send-btn::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, rgba(109, 40, 217, 0.8), rgba(6, 214, 160, 0.8));
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .send-btn:hover {
-            transform: scale(1.1);
-            box-shadow: 0 10px 25px rgba(6, 214, 160, 0.4);
-        }
-
-        .send-btn:hover::after {
-            opacity: 1;
-        }
-
-        .send-btn:active {
-            transform: scale(0.95);
-        }
-
-        /* Animations */
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes gradientPulse {
-            0% {
-                background-position: 0% 50%;
-            }
-            50% {
-                background-position: 100% 50%;
-            }
-            100% {
-                background-position: 0% 50%;
-            }
-        }
-
-        /* Reward animation */
-        .reward {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            pointer-events: none;
-            z-index: 10;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .confetti {
-            position: absolute;
-            width: 10px;
-            height: 10px;
-            opacity: 0;
-        }
-
-        /* Typing indicator */
-        .typing-indicator {
-            display: flex;
-            align-items: center;
-            padding: calc(var(--spacing-unit) / 2) var(--spacing-unit);
-            background: rgba(6, 214, 160, 0.1);
-            border-radius: var(--bubble-radius);
-            width: fit-content;
-            margin-bottom: calc(var(--spacing-unit) / 2);
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
-            border-left: 3px solid var(--vibrant-teal);
-        }
-
-        .typing-dot {
-            width: 8px;
-            height: 8px;
-            background-color: var(--vibrant-teal);
-            border-radius: 50%;
-            margin: 0 2px;
-            animation: typingAnimation 1.4s infinite ease-in-out;
-        }
-
-        .typing-dot:nth-child(1) {
-            animation-delay: 0s;
-        }
-
-        .typing-dot:nth-child(2) {
-            animation-delay: 0.2s;
-        }
-
-        .typing-dot:nth-child(3) {
-            animation-delay: 0.4s;
-        }
-
-        @keyframes typingAnimation {
-            0%, 60%, 100% {
-                transform: translateY(0);
-            }
-            30% {
-                transform: translateY(-5px);
-            }
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            :root {
-                --spacing-unit: 1rem;
-            }
-            
-            .message {
-                max-width: 85%;
-            }
-            
-            .logo {
-                font-size: 1.2rem;
-                letter-spacing: 0.3rem;
-            }
-
-            .input-area {
-                flex-direction: column;
-            }
-
-            #nameInput, #messageInput {
-                flex: 1;
-                width: 100%;
-            }
-
-            #nameInput {
-                border-right: none;
-                border-bottom: 1px solid rgba(109, 40, 217, 0.3);
-            }
-        }
-
-        /* Enhanced Light Mode */
-        body.light-mode {
-            background: #f8fafc;
-            color: #1e293b;
-        }
-
-        body.light-mode .gradient-bg {
-            background: linear-gradient(135deg, 
-                rgba(248, 250, 252, 0.9) 0%, 
-                rgba(109, 40, 217, 0.1) 50%, 
-                rgba(6, 214, 160, 0.05) 100%);
-        }
-
-        body.light-mode .header,
-        body.light-mode .input-area {
-            background: rgba(248, 250, 252, 0.9);
-            border-color: rgba(203, 213, 225, 0.5);
-        }
-
-        body.light-mode .message {
-            background: rgba(255, 255, 255, 0.95);
-            border-color: rgba(203, 213, 225, 0.5);
-            color: #1e293b;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-        }
-
-        body.light-mode .user-message {
-            background: rgba(109, 40, 217, 0.08);
-            border-left: 3px solid rgba(109, 40, 217, 0.5);
-        }
-
-        body.light-mode .other-message {
-            background: rgba(6, 214, 160, 0.08);
-            border-left: 3px solid rgba(6, 214, 160, 0.5);
-        }
-
-        body.light-mode .input-field {
-            background: rgba(203, 213, 225, 0.3);
-            color: #1e293b;
-        }
-
-        body.light-mode .input-field:focus {
-            background: rgba(203, 213, 225, 0.4);
-            box-shadow: 0 0 0 2px rgba(6, 214, 160, 0.5);
-        }
-
-        body.light-mode .btn {
-            background: rgba(203, 213, 225, 0.3);
-            color: #1e293b;
-        }
-
-        body.light-mode .btn::after {
-            background: linear-gradient(90deg, rgba(109, 40, 217, 0.2), rgba(6, 214, 160, 0.2));
-        }
-
-        body.light-mode .theme-toggle {
-            background: rgba(203, 213, 225, 0.5);
-        }
-
-        body.light-mode .theme-toggle .toggle-thumb {
-            background: var(--deep-blue);
-        }
-
-        body.light-mode .messages::-webkit-scrollbar-track {
-            background: rgba(203, 213, 225, 0.3);
-        }
-
-        body.light-mode .messages::-webkit-scrollbar-thumb {
-            background: linear-gradient(rgba(109, 40, 217, 0.5), rgba(6, 214, 160, 0.5));
-        }
-
-        /* Theme toggle with better visibility */
-        .theme-toggle {
-            position: relative;
-            width: 60px;
-            height: 30px;
-            border-radius: 50px;
-            background: rgba(109, 40, 217, 0.3);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            padding: 0 5px;
-            transition: all 0.3s ease;
-            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-        .theme-toggle:hover {
-            background: rgba(109, 40, 217, 0.4);
-        }
-
-        .toggle-thumb {
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            background: white;
-            position: absolute;
-            left: 4px;
-            transition: transform 0.3s ease;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
-
-        .toggle-thumb::before {
-            content: '';
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, var(--electric-purple), var(--vibrant-teal));
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .theme-toggle:hover .toggle-thumb::before {
-            opacity: 0.3;
-        }
-
-        body.light-mode .theme-toggle .toggle-thumb {
-            transform: translateX(30px);
-        }
-
-        /* Password prompt for clearing chat */
-        .password-prompt {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(12, 15, 23, 0.9);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-            gap: var(--spacing-unit);
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-        }
-
-        .password-prompt.active {
-            opacity: 1;
-            pointer-events: all;
-        }
-
-        .password-prompt h3 {
-            color: white;
-            margin-bottom: calc(var(--spacing-unit) / 2);
-            background: linear-gradient(90deg, var(--electric-purple), var(--vibrant-teal));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            font-size: 1.5rem;
-        }
-
-        .password-input {
-            padding: calc(var(--spacing-unit) / 1.5) var(--spacing-unit);
-            border: none;
-            border-radius: var(--bubble-radius);
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            font-size: 1rem;
+        #timerFullscreenDisplay {
+            font-family: 'Montserrat', monospace;
+            font-size: min(13vw, 13vh, 120px);
+            color: var(--accent);
+            background: var(--card);
+            border-radius: calc(var(--base)*2);
+            padding: 2em 2.618em;
+            box-shadow: 0 6px 32px #0006;
             text-align: center;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
-            width: 300px;
-            max-width: 80%;
+            user-select: none;
         }
-
-        .password-input:focus {
-            outline: none;
-            box-shadow: 0 0 0 2px var(--vibrant-teal);
-            background: rgba(255, 255, 255, 0.15);
-        }
-
-        /* Floating emoji reactions */
-        .emoji-reaction {
+        #timerFullscreenExitBtn {
             position: absolute;
-            font-size: 1.5rem;
-            pointer-events: none;
-            z-index: 5;
-            animation: floatUp 3s ease-in-out forwards;
+            top: 2vw;
+            right: 2vw;
+            background: #e53935;
+            color: #fff;
+            font-family: 'Montserrat', sans-serif;
+            font-size: min(4vw, 24px);
+            padding: 0.8em 1.618em;
+            border: none;
+            border-radius: 1em;
+            font-weight: 700;
+            box-shadow: 0 2px 8px #0006;
+            cursor: pointer;
         }
-
-        @keyframes floatUp {
-            0% {
-                transform: translateY(0) scale(0.5);
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(-100px) scale(1.5);
-                opacity: 0;
-            }
+        #timerFullscreenExitBtn:hover {
+            background: #b71c1c;
         }
-
-        /* Hidden class */
-        .hidden {
-            display: none !important;
+        /* Apps button only for chat page */
+        #appsBtn {
+            position: fixed;
+            left: 25px;
+            bottom: 25px;
+            z-index: 11000;
+            background: #ffd700;
+            color: #181f2a;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 1.08em;
+            padding: 0.85em 1.3em;
+            border-radius: 1em;
+            box-shadow: 0 2px 12px #0003;
+            text-decoration: none;
+            transition: background 0.16s, color 0.16s;
+            display: none;
+        }
+        #appsBtn.show {
+            display: block;
+        }
+        #appsBtn:hover, #appsBtn:focus {
+            background: #ffe066;
+            color: #000;
         }
     </style>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body>
-    <div class="gradient-bg"></div>
-    <div id="particles-js"></div>
-    
-    <div class="password-prompt" id="passwordPrompt">
-        <h3>Enter Password to Clear Chat</h3>
-        <input type="password" class="password-input" id="clearPasswordInput" placeholder="paper is tasty" autofocus>
-        <p style="color: rgba(255,255,255,0.5); font-size: 0.8rem;">breathe air to continue/p>
-    </div>
-    
-    <div class="header">
-        <div class="logo">NEXUS</div>
-        <div class="controls">
-            <div class="theme-toggle" id="themeToggle">
-                <div class="toggle-thumb"></div>
+    <div id="container">
+        <h1>Golden Ratio Timer</h1>
+        <div class="subtitle">Set a timer. Format: <b>hours:minutes:seconds</b> (Examples: <i>5:30</i>, <i>30</i>, <i>1:5:30</i>)</div>
+        <div id="timerCard">
+            <input type="text" id="timerInput" placeholder="Enter time (e.g. 1:20, 30, 0:2:00)">
+            <button id="startBtn">Start Timer</button>
+            <button id="fullscreenBtn">Fullscreen</button>
+            <div id="timerError"></div>
+            <div id="timerDisplay">00:00:00</div>
+            <div id="timerActions">
+                <button id="pauseBtn" disabled>Pause</button>
+                <button id="resetBtn" disabled>Reset</button>
             </div>
-            <button class="btn" id="clearChat">Clear</button>
         </div>
     </div>
-    
-    <div class="chat-container">
-        <div class="messages" id="messages">
-            <!-- Messages will appear here -->
+    <div id="chatContainer" style="display:none;">
+        <h1 style="color:var(--accent);font-family:'Montserrat',sans-serif;text-align:center;">Golden Ratio Text Wall</h1>
+        <div class="subtitle" style="text-align:center;">Share your thoughts, stories, or messages. Timeless beauty, forever visible.</div>
+        <div id="formCard">
+            <form id="sendForm" autocomplete="off">
+                <label for="nameInput">Your Name</label>
+                <input type="text" id="nameInput" maxlength="22" placeholder="Enter your name..." required>
+                <label for="textInput">Your Message</label>
+                <textarea id="textInput" maxlength="500" rows="4" placeholder="What do you want to share?" required></textarea>
+                <button type="submit">Send Message</button>
+            </form>
+            <button id="clearBtn" type="button">Clear Wall</button>
         </div>
-        
-        <div class="input-area">
-            <input type="text" class="input-field" id="nameInput" placeholder="Your name" maxlength="20">
-            <input type="text" class="input-field" id="messageInput" placeholder="Type a message..." autocomplete="off">
-            <button class="send-btn" id="sendBtn">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M22 2L11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-            </button>
+        <button id="scrollBottomBtn" type="button">Scroll to Latest</button>
+        <div id="wall"></div>
+        <!-- Apps Button - only visible on chat page -->
+        <a href="apps.html" id="appsBtn" title="Apps">Apps</a>
+    </div>
+    <div id="clearModal">
+        <div id="clearModalContent">
+            <label for="clearPassword">Enter password to clear wall:</label>
+            <input type="password" id="clearPassword" placeholder="Password">
+            <div id="clearError"></div>
+            <button id="confirmClearBtn">Clear Now</button>
+            <button id="cancelClearBtn">Cancel</button>
         </div>
     </div>
-    
-    <div class="reward hidden" id="reward">
-        <!-- Confetti particles will be added here -->
+    <div id="timerFullscreen">
+        <div id="timerFullscreenContent">
+            <div id="timerFullscreenDisplay">00:00:00</div>
+            <button id="timerFullscreenExitBtn">Exit Fullscreen</button>
+        </div>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
     <script>
-        // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyDCtiOEsg0iNAIxkc-wBD_Kh6oRpwqTLQw",
             authDomain: "dffr-f1f5c.firebaseapp.com",
@@ -692,371 +466,274 @@
             messagingSenderId: "1087054401424",
             appId: "1:1087054401424:web:ee1e3bef36e6b20d0f2d15"
         };
-
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
-        const messagesRef = database.ref('messages');
-
-        // DOM elements
-        const messagesEl = document.getElementById('messages');
-        const messageInput = document.getElementById('messageInput');
-        const nameInput = document.getElementById('nameInput');
-        const sendBtn = document.getElementById('sendBtn');
-        const clearChat = document.getElementById('clearChat');
-        const themeToggle = document.getElementById('themeToggle');
-        const passwordPrompt = document.getElementById('passwordPrompt');
-        const clearPasswordInput = document.getElementById('clearPasswordInput');
-        const rewardEl = document.getElementById('reward');
-        const gradientBg = document.querySelector('.gradient-bg');
-
-        // Initialize particles.js with more engaging settings
-        particlesJS('particles-js', {
-            particles: {
-                number: { value: 60, density: { enable: true, value_area: 800 } },
-                color: { value: ["#6d28d9", "#06d6a0"] },
-                shape: { type: "circle" },
-                opacity: { value: 0.5, random: true },
-                size: { value: 4, random: true },
-                line_linked: { 
-                    enable: true, 
-                    distance: 150, 
-                    color: "#6d28d9", 
-                    opacity: 0.3, 
-                    width: 1,
-                    shadow: {
-                        enable: true,
-                        color: "#06d6a0",
-                        blur: 5
-                    }
-                },
-                move: { 
-                    enable: true, 
-                    speed: 3, 
-                    direction: "none", 
-                    random: true, 
-                    straight: false, 
-                    out_mode: "out",
-                    attract: { enable: true, rotateX: 600, rotateY: 1200 }
-                }
-            },
-            interactivity: {
-                detect_on: "canvas",
-                events: {
-                    onhover: { 
-                        enable: true, 
-                        mode: "bubble",
-                        parallax: { enable: true, force: 60, smooth: 10 }
-                    },
-                    onclick: { 
-                        enable: true, 
-                        mode: "push",
-                        push: { particles_nb: 15 }
-                    }
-                }
-            }
-        });
-
-        // Message counter for rewards and typing indicators
-        let messageCount = 0;
-        let isTyping = false;
-        let typingTimeout;
-
-        // Show emoji reaction animation
-        function showEmojiReaction(emoji, element) {
-            const rect = element.getBoundingClientRect();
-            const x = rect.left + rect.width / 2;
-            const y = rect.top + rect.height / 2;
-            
-            const emojiEl = document.createElement('div');
-            emojiEl.classList.add('emoji-reaction');
-            emojiEl.textContent = emoji;
-            emojiEl.style.left = `${x}px`;
-            emojiEl.style.top = `${y}px`;
-            
-            document.body.appendChild(emojiEl);
-            
-            setTimeout(() => {
-                emojiEl.remove();
-            }, 3000);
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
         }
+        const db = firebase.database();
 
-        // Send message function with enhanced feedback
-        function sendMessage() {
-            const name = nameInput.value.trim() || 'Anonymous';
-            const message = messageInput.value.trim();
-            
-            if (message) {
-                // Create message object
-                const messageObj = {
-                    name: name,
-                    text: message,
-                    timestamp: firebase.database.ServerValue.TIMESTAMP
-                };
-                
-                // Push to Firebase
-                messagesRef.push(messageObj);
-                
-                // Clear input
-                messageInput.value = '';
-                
-                // Increment counter and check for reward
-                messageCount++;
-                if (messageCount % 5 === 0) {
-                    showReward();
-                }
-                
-                // Show emoji reaction
-                const emojis = ['💬', '👍', '🚀', '💎', '✨', '🔥', '🎯', '⚡', '🌈'];
-                const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
-                showEmojiReaction(randomEmoji, sendBtn);
-                
-                // Haptic feedback (if supported)
-                if ('vibrate' in navigator) {
-                    navigator.vibrate([50, 30, 50]);
-                }
-                
-                // Animation feedback
-                sendBtn.animate([
-                    { transform: 'scale(1)' },
-                    { transform: 'scale(1.2)' },
-                    { transform: 'scale(1)' }
-                ], {
-                    duration: 300,
-                    easing: 'ease-out'
-                });
-            }
+        // TIMER LOGIC
+        const timerInput = document.getElementById('timerInput');
+        const startBtn = document.getElementById('startBtn');
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
+        const timerError = document.getElementById('timerError');
+        const timerDisplay = document.getElementById('timerDisplay');
+        const timerActions = document.getElementById('timerActions');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const chatContainer = document.getElementById('chatContainer');
+        const mainContainer = document.getElementById('container');
+        const appsBtn = document.getElementById('appsBtn');
+
+        let timerSeconds = 0;
+        let timerInterval = null;
+        let isPaused = false;
+        let originalSeconds = 0;
+
+        function formatTimer(secs) {
+            secs = Math.max(0, Math.floor(secs));
+            let h = Math.floor(secs/3600);
+            let m = Math.floor((secs%3600)/60);
+            let s = secs%60;
+            return `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
         }
-
-        // Show reward animation with enhanced effects
-        function showReward() {
-            rewardEl.innerHTML = '';
-            rewardEl.classList.remove('hidden');
-            
-            // Create confetti particles with more variety
-            for (let i = 0; i < 120; i++) {
-                const confetti = document.createElement('div');
-                confetti.classList.add('confetti');
-                confetti.style.left = Math.random() * 100 + '%';
-                confetti.style.top = Math.random() * 100 + '%';
-                
-                // Random shapes and colors
-                const shapes = ['circle', 'square', 'triangle'];
-                const shape = shapes[Math.floor(Math.random() * shapes.length)];
-                
-                if (shape === 'circle') {
-                    confetti.style.borderRadius = '50%';
-                } else if (shape === 'triangle') {
-                    confetti.style.clipPath = 'polygon(50% 0%, 0% 100%, 100% 100%)';
+        function showTimerError(msg) {
+            timerError.textContent = msg;
+            timerError.style.display = "block";
+        }
+        function hideTimerError() {
+            timerError.textContent = "";
+            timerError.style.display = "none";
+        }
+        function parseTimeInput(val) {
+            val = val.trim();
+            if (!val) return null;
+            let parts = val.split(':').map(x=>x.trim());
+            if (parts.length === 1) {
+                if (/^\d+$/.test(parts[0])) {
+                    return parseInt(parts[0],10);
                 }
-                
-                const colors = ['#6d28d9', '#06d6a0', '#ffffff', '#fbbf24', '#ef4444', '#3b82f6'];
-                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                
-                confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
-                confetti.style.width = `${Math.random() * 12 + 5}px`;
-                confetti.style.height = `${Math.random() * 12 + 5}px`;
-                
-                // Animation with more dynamic movement
-                const animation = confetti.animate([
-                    { opacity: 0, transform: 'translateY(0) rotate(0deg) scale(0)' },
-                    { opacity: 1, transform: 'translateY(-50px) rotate(180deg) scale(1)' },
-                    { opacity: 0, transform: 'translateY(-200px) rotate(360deg) scale(1.5)' }
-                ], {
-                    duration: Math.random() * 1500 + 1000,
-                    easing: 'cubic-bezier(0.1, 0.8, 0.3, 1)'
-                });
-                
-                rewardEl.appendChild(confetti);
-                
-                animation.onfinish = () => {
-                    confetti.remove();
-                };
-            }
-            
-            // Show special message
-            const specialMessages = [
-                "Amazing! 🎉",
-                "5 messages sent! 💎",
-                "Keep it up! 🚀",
-                "Chat champion! 🏆",
-                "You're on fire! 🔥",
-                "Unstoppable! ⚡",
-                "Legendary! 🌟"
-            ];
-            const randomMessage = specialMessages[Math.floor(Math.random() * specialMessages.length)];
-            
-            const messageEl = document.createElement('div');
-            messageEl.textContent = randomMessage;
-            messageEl.style.position = 'absolute';
-            messageEl.style.top = '50%';
-            messageEl.style.left = '50%';
-            messageEl.style.transform = 'translate(-50%, -50%)';
-            messageEl.style.fontSize = '1.8rem';
-            messageEl.style.fontWeight = 'bold';
-            messageEl.style.background = 'linear-gradient(90deg, var(--electric-purple), var(--vibrant-teal))';
-            messageEl.style.webkitBackgroundClip = 'text';
-            messageEl.style.backgroundClip = 'text';
-            messageEl.style.color = 'transparent';
-            messageEl.style.textShadow = '0 0 15px rgba(6, 214, 160, 0.5)';
-            messageEl.style.padding = '1rem 2rem';
-            messageEl.style.borderRadius = '50px';
-            messageEl.style.backdropFilter = 'blur(10px)';
-            messageEl.style.border = '1px solid rgba(255, 255, 255, 0.2)';
-            
-            rewardEl.appendChild(messageEl);
-            
-            setTimeout(() => {
-                rewardEl.classList.add('hidden');
-                rewardEl.innerHTML = '';
-            }, 2500);
-        }
-
-        // Display messages from Firebase with typing indicators
-        messagesRef.on('child_added', (snapshot) => {
-            const message = snapshot.val();
-            displayMessage(message.name, message.text, message.timestamp);
-        });
-
-        // Display message in UI with enhanced animations
-        function displayMessage(name, text, timestamp) {
-            const messageEl = document.createElement('div');
-            const isCurrentUser = name === nameInput.value.trim();
-            
-            messageEl.classList.add('message');
-            messageEl.classList.add(isCurrentUser ? 'user-message' : 'other-message');
-            
-            const time = new Date(timestamp);
-            const timeString = time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            
-            messageEl.innerHTML = `
-                <div class="message-sender">${name}</div>
-                <div class="message-text">${text}</div>
-                <div class="message-time">${timeString}</div>
-            `;
-            
-            messagesEl.appendChild(messageEl);
-            
-            // Smooth scroll to bottom
-            messagesEl.scrollTo({
-                top: messagesEl.scrollHeight,
-                behavior: 'smooth'
-            });
-            
-            // Add subtle glow effect to new messages
-            messageEl.animate([
-                { boxShadow: '0 0 0 rgba(6, 214, 160, 0)' },
-                { boxShadow: '0 0 25px rgba(6, 214, 160, 0.4)' },
-                { boxShadow: '0 0 0 rgba(6, 214, 160, 0)' }
-            ], {
-                duration: 1500,
-                easing: 'ease-out'
-            });
-        }
-
-        // Clear chat with password protection
-        clearChat.addEventListener('click', () => {
-            passwordPrompt.classList.add('active');
-            clearPasswordInput.focus();
-        });
-
-        clearPasswordInput.addEventListener('keyup', (e) => {
-            if (e.key === '`') {
-                messagesRef.remove();
-                messagesEl.innerHTML = '';
-                passwordPrompt.classList.remove('active');
-                showEmojiReaction('🧹', clearChat);
-                clearPasswordInput.value = '';
-            } else if (e.key === 'Escape') {
-                passwordPrompt.classList.remove('active');
-                clearPasswordInput.value = '';
-            }
-        });
-
-        // Theme toggle with smooth transition and emoji reaction
-        themeToggle.addEventListener('click', () => {
-            document.body.classList.toggle('light-mode');
-            showEmojiReaction(document.body.classList.contains('light-mode') ? '🌞' : '🌙', themeToggle);
-            
-            // Change particle colors based on theme
-            if (document.body.classList.contains('light-mode')) {
-                pJS('particles-js', 'particles.color.value', ["#6d28d9", "#06d6a0"]);
+                return null;
+            } else if (parts.length === 2) {
+                if (/^\d+$/.test(parts[0]) && /^\d+$/.test(parts[1])) {
+                    return parseInt(parts[0],10)*60 + parseInt(parts[1],10);
+                }
+                return null;
+            } else if (parts.length === 3) {
+                if (/^\d+$/.test(parts[0]) && /^\d+$/.test(parts[1]) && /^\d+$/.test(parts[2])) {
+                    return parseInt(parts[0],10)*3600 + parseInt(parts[1],10)*60 + parseInt(parts[2],10);
+                }
+                return null;
             } else {
-                pJS('particles-js', 'particles.color.value', ["#6d28d9", "#06d6a0"]);
+                return null;
             }
-        });
-
-        // Typing indicator logic
-        messageInput.addEventListener('input', () => {
-            if (!isTyping && messageInput.value.length > 0) {
-                isTyping = true;
-                // In a real app, you would send a typing indicator to other users here
-            }
-            
-            clearTimeout(typingTimeout);
-            typingTimeout = setTimeout(() => {
-                isTyping = false;
-                // In a real app, you would send a stopped typing indicator here
+        }
+        function updateTimerDisplay() {
+            timerDisplay.textContent = formatTimer(timerSeconds);
+            timerFullscreenDisplay.textContent = formatTimer(timerSeconds);
+        }
+        function startTimer() {
+            if (timerSeconds <= 0) return;
+            isPaused = false;
+            pauseBtn.textContent = "Pause";
+            pauseBtn.disabled = false;
+            resetBtn.disabled = false;
+            startBtn.disabled = true;
+            timerInput.disabled = true;
+            fullscreenBtn.disabled = false;
+            timerInterval = setInterval(()=>{
+                if (!isPaused && timerSeconds > 0) {
+                    timerSeconds--;
+                    updateTimerDisplay();
+                    if (timerSeconds <= 0) {
+                        clearInterval(timerInterval);
+                        timerInterval = null;
+                        pauseBtn.disabled = true;
+                        startBtn.disabled = false;
+                        timerInput.disabled = false;
+                        fullscreenBtn.disabled = true;
+                    }
+                }
             }, 1000);
-        });
-
-        // Event listeners with enhanced feedback
-        sendBtn.addEventListener('click', sendMessage);
-        
-        messageInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                sendMessage();
+        }
+        function resetTimer() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            timerSeconds = originalSeconds;
+            updateTimerDisplay();
+            pauseBtn.textContent = "Pause";
+            pauseBtn.disabled = true;
+            resetBtn.disabled = true;
+            startBtn.disabled = false;
+            timerInput.disabled = false;
+            fullscreenBtn.disabled = false;
+            isPaused = false;
+        }
+        startBtn.onclick = function() {
+            hideTimerError();
+            let val = timerInput.value;
+            if(val === "nimv3develop"){
+                mainContainer.style.display = "none";
+                chatContainer.style.display = "block";
+                appsBtn.classList.add("show");
+                return;
+            }
+            let secs = parseTimeInput(val);
+            if (secs === null || secs <= 0 || secs > 86400) {
+                showTimerError("Invalid format. Use hours:minutes:seconds (max 24h). Examples: 90, 1:30, 1:5:30, 0:2:10");
+                return;
+            }
+            timerSeconds = secs;
+            originalSeconds = secs;
+            updateTimerDisplay();
+            startTimer();
+        };
+        pauseBtn.onclick = function() {
+            if (!timerInterval) return;
+            isPaused = !isPaused;
+            pauseBtn.textContent = isPaused ? "Resume" : "Pause";
+        };
+        resetBtn.onclick = function() {
+            resetTimer();
+        };
+        timerInput.oninput = function() {
+            hideTimerError();
+        };
+        // Fullscreen logic
+        const timerFullscreen = document.getElementById('timerFullscreen');
+        const timerFullscreenDisplay = document.getElementById('timerFullscreenDisplay');
+        const timerFullscreenExitBtn = document.getElementById('timerFullscreenExitBtn');
+        fullscreenBtn.onclick = function() {
+            timerFullscreen.style.display = "flex";
+            timerFullscreenDisplay.textContent = timerDisplay.textContent;
+            document.body.style.overflow = "hidden";
+        };
+        timerFullscreenExitBtn.onclick = function() {
+            timerFullscreen.style.display = "none";
+            document.body.style.overflow = "";
+        };
+        window.addEventListener("keydown", function(e){
+            if (timerFullscreen.style.display === "flex" && (e.key === "Escape" || e.key === "Esc")) {
+                timerFullscreen.style.display = "none";
+                document.body.style.overflow = "";
             }
         });
+        updateTimerDisplay();
 
-        // Focus name input if empty when message input is focused
-        messageInput.addEventListener('focus', () => {
-            if (!nameInput.value.trim()) {
-                nameInput.focus();
-            }
-        });
+        // CHAT LOGIC
+        const wallDiv = document.getElementById('wall');
+        const form = document.getElementById('sendForm');
+        const nameInput = document.getElementById('nameInput');
+        const textInput = document.getElementById('textInput');
+        const clearBtn = document.getElementById('clearBtn');
+        const clearModal = document.getElementById('clearModal');
+        const clearPassword = document.getElementById('clearPassword');
+        const confirmClearBtn = document.getElementById('confirmClearBtn');
+        const cancelClearBtn = document.getElementById('cancelClearBtn');
+        const clearError = document.getElementById('clearError');
+        const scrollBottomBtn = document.getElementById('scrollBottomBtn');
+        let messages = [];
 
-        // Add hover effect to message input
-        messageInput.addEventListener('mouseenter', () => {
-            messageInput.animate([
-                { boxShadow: '0 0 0 rgba(6, 214, 160, 0)' },
-                { boxShadow: '0 0 15px rgba(6, 214, 160, 0.3)' }
-            ], {
-                duration: 300,
-                fill: 'forwards'
-            });
-        });
-
-        messageInput.addEventListener('mouseleave', () => {
-            messageInput.animate([
-                { boxShadow: '0 0 15px rgba(6, 214, 160, 0.3)' },
-                { boxShadow: '0 0 0 rgba(6, 214, 160, 0)' }
-            ], {
-                duration: 300,
-                fill: 'forwards'
-            });
-        });
-
-        // Animate gradient background with more colors
-        function animateBackground() {
-            const hues = [220, 270, 160, 300, 200];
-            let currentHue = 0;
-            
-            setInterval(() => {
-                currentHue = (currentHue + 1) % hues.length;
-                const nextHue = (hues[currentHue] + 30) % 360;
-                const nextHue2 = (hues[currentHue] + 60) % 360;
-                
-                gradientBg.style.background = `linear-gradient(135deg, 
-                    hsl(${hues[currentHue]}, 80%, 10%) 0%, 
-                    hsl(${nextHue}, 80%, 30%) 50%, 
-                    hsl(${nextHue2}, 80%, 20%) 100%)`;
-            }, 15000);
+        function renderWall() {
+            wallDiv.innerHTML = '';
+            messages.forEach(msg => appendMessageCard(msg));
+            scrollWallToBottom();
+        }
+        function appendMessageCard(msg) {
+            const card = document.createElement('div');
+            card.className = 'msgCard';
+            const hdr = document.createElement('div');
+            hdr.className = 'msgHeader';
+            const name = document.createElement('span');
+            name.className = 'msgName';
+            name.textContent = msg.name;
+            hdr.appendChild(name);
+            const time = document.createElement('span');
+            time.className = 'msgTime';
+            time.textContent = formatDate(msg.time);
+            hdr.appendChild(time);
+            card.appendChild(hdr);
+            const txt = document.createElement('div');
+            txt.className = 'msgText';
+            txt.textContent = msg.text;
+            card.appendChild(txt);
+            wallDiv.appendChild(card);
+        }
+        function scrollWallToBottom() {
+            wallDiv.scrollTop = wallDiv.scrollHeight;
+        }
+        function formatDate(t){
+            let d = new Date(t);
+            let now = new Date();
+            let diff = Math.floor((now-d)/1000);
+            if(diff < 60) return 'Just now';
+            if(diff < 3600) return `${Math.floor(diff/60)}m ago`;
+            if(diff < 86400) return `${Math.floor(diff/3600)}h ago`;
+            return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
         }
 
-        // Initialize
-        nameInput.focus();
-        animateBackground();
+        db.ref('messages').on('value', snapshot => {
+            const val = snapshot.val() || {};
+            messages = Object.keys(val).map(k => val[k]).sort((a,b) => a.time - b.time);
+            renderWall();
+        });
+
+        if(form){
+            form.onsubmit = e => {
+                e.preventDefault();
+                let name = nameInput.value.trim();
+                let text = textInput.value.trim();
+                if(!name || !text) return;
+                name = name.replace(/</g,"&lt;").replace(/>/g,"&gt;");
+                text = text.replace(/</g,"&lt;").replace(/>/g,"&gt;");
+                let msg = {
+                    name,
+                    text,
+                    time: Date.now()
+                };
+                db.ref('messages').push(msg);
+                textInput.value = '';
+                textInput.focus();
+            };
+        }
+
+        if(clearBtn){
+            clearBtn.onclick = function() {
+                clearModal.style.display = 'flex';
+                clearPassword.value = '';
+                clearError.textContent = '';
+                clearError.style.display = 'none';
+                clearPassword.focus();
+            };
+        }
+        if(cancelClearBtn){
+            cancelClearBtn.onclick = function() {
+                clearModal.style.display = 'none';
+            };
+        }
+        if(confirmClearBtn){
+            confirmClearBtn.onclick = function() {
+                if (clearPassword.value === 'class') {
+                    db.ref('messages').set({});
+                    clearModal.style.display = 'none';
+                } else {
+                    clearError.textContent = 'Incorrect password!';
+                    clearError.style.display = 'block';
+                    clearPassword.value = '';
+                    clearPassword.focus();
+                }
+            };
+            clearPassword.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    confirmClearBtn.click();
+                }
+            });
+        }
+
+        if (scrollBottomBtn && wallDiv) {
+            scrollBottomBtn.onclick = function() {
+                wallDiv.scrollTop = wallDiv.scrollHeight;
+            };
+        }
     </script>
 </body>
 </html>
